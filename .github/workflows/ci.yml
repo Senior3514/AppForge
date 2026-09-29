@@ -11,3 +11,8 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm typecheck
       - run: pnpm test
+      - run: pnpm --filter @appforge/web build
+      - run: pnpm --filter @appforge/web exec playwright install --with-deps chromium
+      - run: pnpm --filter @appforge/web e2e
+      - run: pnpm --filter @appforge/runtime exec expo export --platform android --output-dir dist
+        env: { CI: "1", EXPO_NO_TELEMETRY: "1" }

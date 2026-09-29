@@ -2,5 +2,10 @@ node_modules
 dist
 .next
 .turbo
+.expo
 .env
 .data
+*.tsbuildinfo
+next-env.d.ts
+test-results
+playwright-report
