@@ -1,0 +1,15 @@
+{
+  "name": "@appforge/api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "src/index.ts",
+  "scripts": { "dev": "tsx src/server.ts", "typecheck": "tsc -p .", "test": "vitest run" },
+  "dependencies": {
+    "@appforge/generator": "workspace:*",
+    "@appforge/modules": "workspace:*",
+    "@appforge/spec": "workspace:*",
+    "@appforge/i18n": "workspace:*"
+  },
+  "devDependencies": { "@electric-sql/pglite": "^0.2.15", "tsx": "^4.19.0" }
+}
