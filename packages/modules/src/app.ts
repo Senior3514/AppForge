@@ -1,13 +1,18 @@
 import { z } from "zod";
 import { makeAppSpecSchema } from "@appforge/spec";
-import { MODULES } from "./library";
+import type { ModuleDef } from "./define";
+import { MODULES, announcements, booking, catalog, collectionList, contact, hero, loyalty, radio, richText } from "./library";
 import { idSchema } from "@appforge/spec";
 
-const blockFor = <M extends (typeof MODULES)[number]>(m: M) =>
-  z.object({ id: idSchema, module: z.literal(m.id), props: m.props as M["props"] });
+const blockFor = <I extends string, S extends z.ZodTypeAny>(m: ModuleDef<S, I>) =>
+  z.object({ id: idSchema, module: z.literal(m.id), props: m.props });
 
-const [first, second, ...rest] = MODULES.map(blockFor);
-export const BlockSchema = z.discriminatedUnion("module", [first!, second!, ...rest]);
+// Listed explicitly so each block keeps its own props type (mapping over MODULES would merge them).
+// The "covers every module" test in modules.test.ts keeps this list and MODULES in sync.
+export const BlockSchema = z.discriminatedUnion("module", [
+  blockFor(hero), blockFor(richText), blockFor(collectionList), blockFor(booking), blockFor(catalog),
+  blockFor(loyalty), blockFor(contact), blockFor(radio), blockFor(announcements),
+]);
 export const AppSpecSchema = makeAppSpecSchema(BlockSchema);
 export type AppSpec = z.infer<typeof AppSpecSchema>;
 export type Block = z.infer<typeof BlockSchema>;

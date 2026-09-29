@@ -4,8 +4,8 @@ import type { z } from "zod";
  * Data contract for a module. Renderers (React Native, web preview, admin editor) and
  * backend handlers are attached in later phases; they key off `id` and validated `props`.
  */
-export interface ModuleDef<S extends z.ZodTypeAny = z.ZodTypeAny> {
-  id: string;
+export interface ModuleDef<S extends z.ZodTypeAny = z.ZodTypeAny, I extends string = string> {
+  id: I;
   title: string;
   description: string;
   props: S;
@@ -16,4 +16,4 @@ export interface ModuleDef<S extends z.ZodTypeAny = z.ZodTypeAny> {
   requires: ReadonlyArray<"payments" | "push">;
 }
 
-export const defineModule = <S extends z.ZodTypeAny>(def: ModuleDef<S>): ModuleDef<S> => def;
+export const defineModule = <I extends string, S extends z.ZodTypeAny>(def: ModuleDef<S, I>): ModuleDef<S, I> => def;

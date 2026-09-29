@@ -123,3 +123,18 @@ export const MESSAGES: Record<Locale, Record<MessageKey, string>> = {
 };
 
 export const t = (locale: Locale, key: MessageKey): string => MESSAGES[locale][key];
+
+/** Example-prompt chips on the landing page; label doubles as the starter prompt in that language. */
+export const EXAMPLE_KEYS = ["restaurant", "salon", "fitness", "ecommerce", "community", "radio", "church", "service", "loyalty"] as const;
+export type ExampleKey = (typeof EXAMPLE_KEYS)[number];
+
+export const EXAMPLES: Record<Locale, Record<ExampleKey, string>> = {
+  en: { restaurant: "Restaurant", salon: "Salon booking", fitness: "Fitness coach", ecommerce: "E-commerce", community: "Community", radio: "Online radio", church: "Church / community", service: "Local service", loyalty: "Loyalty club" },
+  he: { restaurant: "מסעדה", salon: "הזמנת תורים למספרה", fitness: "מאמן כושר", ecommerce: "חנות אונליין", community: "קהילה", radio: "רדיו אונליין", church: "בית כנסת / קהילה", service: "שירות מקומי", loyalty: "מועדון לקוחות" },
+  ar: { restaurant: "مطعم", salon: "حجز صالون", fitness: "مدرب لياقة", ecommerce: "متجر إلكتروني", community: "مجتمع", radio: "راديو عبر الإنترنت", church: "كنيسة / جمعية", service: "خدمة محلية", loyalty: "نادي ولاء" },
+  es: { restaurant: "Restaurante", salon: "Reservas de salón", fitness: "Entrenador personal", ecommerce: "Tienda online", community: "Comunidad", radio: "Radio online", church: "Iglesia / comunidad", service: "Servicio local", loyalty: "Club de fidelidad" },
+  fr: { restaurant: "Restaurant", salon: "Réservation salon", fitness: "Coach sportif", ecommerce: "Boutique en ligne", community: "Communauté", radio: "Radio en ligne", church: "Église / association", service: "Service local", loyalty: "Club de fidélité" },
+  de: { restaurant: "Restaurant", salon: "Salon-Buchung", fitness: "Fitness-Coach", ecommerce: "Onlineshop", community: "Community", radio: "Online-Radio", church: "Kirche / Gemeinde", service: "Lokaler Service", loyalty: "Bonusclub" },
+  pt: { restaurant: "Restaurante", salon: "Agendamento de salão", fitness: "Personal trainer", ecommerce: "Loja online", community: "Comunidade", radio: "Rádio online", church: "Igreja / comunidade", service: "Serviço local", loyalty: "Clube de fidelidade" },
+  ru: { restaurant: "Ресторан", salon: "Запись в салон", fitness: "Фитнес-тренер", ecommerce: "Интернет-магазин", community: "Сообщество", radio: "Онлайн-радио", church: "Церковь / община", service: "Местные услуги", loyalty: "Клуб лояльности" },
+};

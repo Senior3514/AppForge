@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { toJsonSchema } from "@appforge/spec";
-import { AppSpecSchema, MODULES, validateApp, type AppSpec } from "./index";
+import { AppSpecSchema, BlockSchema, MODULES, validateApp, type AppSpec } from "./index";
 
 /** Contract tests: every module must satisfy these, so new modules are covered automatically. */
 describe.each(MODULES.map((m) => [m.id, m] as const))("module contract: %s", (_id, m) => {
@@ -50,4 +50,8 @@ describe("validateApp", () => {
     expect(errs(a).length).toBeGreaterThan(0);
   });
   it("schema exports to JSON schema", () => expect(toJsonSchema(AppSpecSchema)).toMatchObject({ type: "object" }));
+});
+
+it("BlockSchema covers every module in the library", () => {
+  expect([...BlockSchema.options.map((o) => o.shape.module.value)].sort()).toEqual(MODULES.map((m) => m.id).sort());
 });

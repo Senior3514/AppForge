@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { LOCALES, MESSAGES, dirOf, t } from "./index";
+import { EXAMPLES, EXAMPLE_KEYS, LOCALES, MESSAGES, dirOf, t } from "./index";
 
 describe("i18n", () => {
   it("has exactly 8 locales with RTL for he and ar only", () => {
@@ -14,4 +14,7 @@ describe("i18n", () => {
     }
   });
   it("translates", () => expect(t("he", "hero.cta")).toBe("צרו את האפליקציה שלי"));
+  it("example chips exist for every locale", () => {
+    for (const l of LOCALES) for (const k of EXAMPLE_KEYS) expect(EXAMPLES[l][k].trim()).not.toBe("");
+  });
 });
