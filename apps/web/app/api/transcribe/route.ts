@@ -1,6 +1,6 @@
-import { json } from "../../../lib/server";
 import { createTranscriber } from "../../../lib/transcribe";
 
+const json = (body: unknown, status = 200) => Response.json(body, { status });
 const MAX_BYTES = 10 * 1024 * 1024;
 
 export async function POST(req: Request) {

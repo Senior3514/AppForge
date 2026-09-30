@@ -1,114 +1,136 @@
 "use client";
-import { useEffect, useMemo, useRef, useState } from "react";
+import Link from "next/link";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { LOCALES, LOCALE_NAMES, t, type Locale } from "@appforge/i18n";
-import { validateApp, type AppSpec } from "@appforge/modules";
-import { RevisionLog } from "@appforge/spec";
+import { ApiError, api } from "../lib/api";
+import type { Op } from "../lib/ops";
+import type { AppView } from "../lib/types";
+import { useMe } from "../lib/useMe";
+import { HistoryPanel } from "./HistoryPanel";
+import { Inspector } from "./Inspector";
 import { PhonePreview } from "./PhonePreview";
+import { SharePanel } from "./SharePanel";
 
-type Status = { kind: "idle" } | { kind: "busy"; step: string } | { kind: "error"; message: string };
 interface ChatLine { from: "you" | "ai"; text: string; changes?: string[] }
+const btn = "rounded-full border border-neutral-300 px-3 py-1 text-sm disabled:opacity-40";
 
-const STEPS = ["understand", "modules", "theme", "content", "assemble"] as const;
-
-const validate = (d: AppSpec) => { const v = validateApp(d); if (!v.ok) throw new Error(v.errors.join("; ")); return v.spec; };
-
-export function Studio({ locale, initialPrompt }: { locale: Locale; initialPrompt: string }) {
-  const log = useRef<RevisionLog<AppSpec> | null>(null);
-  const [, bump] = useState(0);
-  const [status, setStatus] = useState<Status>({ kind: "idle" });
+export function Studio({ locale, appId }: { locale: Locale; appId: string }) {
+  const { me } = useMe();
+  const [app, setApp] = useState<AppView | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
   const [chat, setChat] = useState<ChatLine[]>([]);
   const [msg, setMsg] = useState("");
+  const [side, setSide] = useState<"edit" | "history">("edit");
+  const [showShare, setShowShare] = useState(false);
   const [dark, setDark] = useState(false);
   const [previewLocale, setPreviewLocale] = useState<Locale | null>(null);
   const [rtl, setRtl] = useState<boolean | null>(null);
   const [platform, setPlatform] = useState<"ios" | "android">("ios");
-  const started = useRef(false);
-  const spec = log.current?.current ?? null;
-  const lastPrompt = useRef(initialPrompt);
-
-  /** Progress labels are cosmetic timing over one request; the server returns the whole spec at once. */
-  async function withSteps<T>(work: Promise<T>): Promise<T> {
-    let i = 0;
-    const tick = setInterval(() => setStatus({ kind: "busy", step: t(locale, `steps.${STEPS[Math.min(++i, STEPS.length - 1)]!}` as never) }), 400);
-    setStatus({ kind: "busy", step: t(locale, "steps.understand") });
-    try { return await work; } finally { clearInterval(tick); }
-  }
-
-  async function generate(prompt: string) {
-    lastPrompt.current = prompt;
-    try {
-      const res = await withSteps(fetch("/api/generate", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ prompt, locale }) }));
-      const body = await res.json();
-      if (!res.ok) throw new Error(body.error ?? "Generation failed");
-      log.current = new RevisionLog<AppSpec>(body.spec, validate);
-      setChat([{ from: "you", text: prompt }, { from: "ai", text: (body.spec as AppSpec).name }]);
-      setStatus({ kind: "idle" });
-    } catch (e) { setStatus({ kind: "error", message: (e as Error).message }); }
-    bump((n) => n + 1);
-  }
-
-  async function iterate(message: string) {
-    if (!log.current) return;
-    setChat((c) => [...c, { from: "you", text: message }]);
-    try {
-      const res = await withSteps(fetch("/api/iterate", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ spec: log.current.current, message }) }));
-      const body = await res.json();
-      if (!res.ok) throw new Error(body.error ?? "Change failed");
-      if (body.ops.length) log.current.commit(body.ops, { label: message.slice(0, 80), source: "ai" });
-      setChat((c) => [...c, { from: "ai", text: body.ops.length ? "" : "No change was needed.", changes: body.changes }]);
-      setStatus({ kind: "idle" });
-    } catch (e) { setStatus({ kind: "error", message: (e as Error).message }); }
-    bump((n) => n + 1);
-  }
+  const lastMessage = useRef("");
 
   useEffect(() => {
-    if (started.current || !initialPrompt) return;
-    started.current = true;
-    void generate(initialPrompt);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    api<AppView>(`/apps/${appId}`).then(setApp).catch((e) => {
+      if (e instanceof ApiError && e.status === 401) window.location.href = `/${locale}/login?next=/${locale}/studio/${appId}`;
+      else setError(e instanceof ApiError && e.status === 404 ? "404" : t(locale, "common.error"));
+    });
+  }, [appId, locale]);
 
-  const opts = useMemo(() => ({ locale: previewLocale ?? spec?.locale ?? locale, dark, rtl, platform }), [previewLocale, spec, locale, dark, rtl, platform]);
-  const busy = status.kind === "busy";
+  /** Runs one server call that returns the new AppView, with shared busy/error handling. */
+  const run = useCallback(async (fn: () => Promise<AppView & { changes?: string[]; note?: string }>, onOk?: (r: AppView & { changes?: string[]; note?: string }) => void) => {
+    setBusy(true); setError(null);
+    try { const r = await fn(); setApp(r); onOk?.(r); }
+    catch (e) { setError(e instanceof ApiError ? e.message : t(locale, "common.error")); }
+    finally { setBusy(false); }
+  }, [locale]);
 
+  const sendChat = useCallback((message: string) => {
+    lastMessage.current = message;
+    setChat((c) => [...c, { from: "you", text: message }]);
+    return run(() => api(`/apps/${appId}/chat`, { method: "POST", body: { message } }),
+      (r) => setChat((c) => [...c, { from: "ai", text: r.changes?.length ? "" : t(locale, "studio.noChange"), changes: r.changes }]));
+  }, [appId, locale, run]);
+
+  const edit = useCallback((ops: Op[], label: string) => run(() => api(`/apps/${appId}/edit`, { method: "POST", body: { label, ops } })), [appId, run]);
+  const undo = () => run(() => api(`/apps/${appId}/undo`, { method: "POST" }));
+  const redo = () => run(() => api(`/apps/${appId}/redo`, { method: "POST" }));
+  const jump = (seq: number) => run(async () => {
+    const applied = app!.history.filter((h) => h.applied).length;
+    let v: AppView = app!;
+    for (let i = 0; i < Math.abs(seq - applied); i++) v = await api<AppView>(`/apps/${appId}/${seq < applied ? "undo" : "redo"}`, { method: "POST" });
+    return v;
+  });
+  const translateWithAi = (target: Locale) => void sendChat(`Translate every customer-visible text into ${LOCALE_NAMES[target]} by filling translations.${target} (keys are the source strings).`);
+
+  if (error === "404") return <main className="p-10">404</main>;
+  if (!app) return <main className="p-10 text-neutral-600" aria-busy>{error ?? t(locale, "studio.loading")}</main>;
+
+  const opts = { locale: previewLocale ?? app.spec.locale, dark, rtl, platform };
   return (
-    <main className="mx-auto grid max-w-6xl gap-6 px-4 py-6 lg:grid-cols-[360px_1fr]">
-      <section aria-label="Chat" className="flex flex-col gap-3">
-        <div className="flex gap-2">
-          <button disabled={!log.current?.canUndo} onClick={() => { log.current!.undo(); bump((n) => n + 1); }} className="rounded-full border px-3 py-1 text-sm disabled:opacity-40">{t(locale, "studio.undo")}</button>
-          <button disabled={!log.current?.canRedo} onClick={() => { log.current!.redo(); bump((n) => n + 1); }} className="rounded-full border px-3 py-1 text-sm disabled:opacity-40">{t(locale, "studio.redo")}</button>
+    <main className="mx-auto max-w-[1400px] px-4 py-4">
+      <div className="mb-4 flex flex-wrap items-center gap-2">
+        <h1 className="me-2 truncate text-lg font-bold">{app.name}</h1>
+        <button className={btn} disabled={!app.canUndo || busy} onClick={undo}>↶ {t(locale, "studio.undo")}</button>
+        <button className={btn} disabled={!app.canRedo || busy} onClick={redo}>↷ {t(locale, "studio.redo")}</button>
+        <div className="relative ms-auto">
+          <button className={btn} aria-expanded={showShare} onClick={() => setShowShare((v) => !v)}>📱 {t(locale, "studio.share")}</button>
+          {showShare && <div className="absolute end-0 z-20 mt-2 w-72"><SharePanel appId={appId} locale={locale} onShared={() => void api<AppView>(`/apps/${appId}`).then(setApp)} /></div>}
         </div>
-        <ol className="flex-1 space-y-2" aria-live="polite">
-          {chat.map((c, i) => (
-            <li key={i} className={`rounded-2xl p-3 text-sm ${c.from === "you" ? "bg-neutral-100" : "bg-blue-50"}`}>
-              {c.text}
-              {c.changes && <ul className="list-disc ps-5">{c.changes.map((x) => <li key={x}>{x}</li>)}</ul>}
-            </li>
-          ))}
-        </ol>
-        {busy && <p role="status" className="text-sm text-neutral-600">{status.step}…</p>}
-        {status.kind === "error" && (
-          <p role="alert" className="rounded-xl bg-red-50 p-3 text-sm text-red-800">
-            {status.message} <button className="underline" onClick={() => (log.current ? iterate(chat.at(-1)?.text ?? "") : generate(lastPrompt.current))}>Retry</button>
-          </p>
-        )}
-        <form onSubmit={(e) => { e.preventDefault(); const m = msg.trim(); if (!m || busy) return; setMsg(""); void (log.current ? iterate(m) : generate(m)); }} className="flex gap-2">
-          <input value={msg} onChange={(e) => setMsg(e.target.value)} placeholder={t(locale, "hero.placeholder")} aria-label={t(locale, "hero.placeholder")} className="w-full rounded-full border px-4 py-2" />
-          <button disabled={busy || !msg.trim()} className="rounded-full bg-[var(--brand)] px-4 py-2 text-white disabled:opacity-40">→</button>
-        </form>
-      </section>
+        <Link href={`/${locale}/apps/${appId}?tab=publish`} className="rounded-full bg-[var(--brand)] px-4 py-1.5 text-sm font-semibold text-white">{t(locale, "studio.manage")}</Link>
+      </div>
 
-      <section aria-label="Preview" className="space-y-4">
-        <div className="flex flex-wrap items-center gap-2 text-sm">
-          <select aria-label="Preview language" value={opts.locale} onChange={(e) => setPreviewLocale(e.target.value as Locale)} className="rounded border px-2 py-1">
-            {LOCALES.map((l) => <option key={l} value={l}>{LOCALE_NAMES[l]}</option>)}
-          </select>
-          <label className="flex items-center gap-1"><input type="checkbox" checked={dark} onChange={(e) => setDark(e.target.checked)} />Dark</label>
-          <label className="flex items-center gap-1"><input type="checkbox" checked={rtl === true} onChange={(e) => setRtl(e.target.checked ? true : null)} />RTL</label>
-          <select aria-label="Platform" value={platform} onChange={(e) => setPlatform(e.target.value as "ios" | "android")} className="rounded border px-2 py-1"><option value="ios">iOS</option><option value="android">Android</option></select>
-        </div>
-        {spec ? <PhonePreview key={spec.name + spec.screens.length + spec.navigation.join()} spec={spec} opts={opts} /> : <div className="mx-auto h-[580px] w-[300px] animate-pulse rounded-[44px] bg-neutral-200" aria-hidden />}
-      </section>
+      {me?.user?.anonymous && (
+        <p className="mb-4 rounded-xl bg-blue-50 p-3 text-sm text-blue-900">{t(locale, "auth.claim")}{" "}
+          <Link className="font-semibold underline" href={`/${locale}/signup?next=/${locale}/studio/${appId}`}>{t(locale, "nav.signup")}</Link></p>
+      )}
+
+      <div className="grid gap-6 lg:grid-cols-[320px_1fr_340px]">
+        <section aria-label={t(locale, "studio.chat")} className="flex min-h-[320px] flex-col gap-3 lg:max-h-[calc(100vh-140px)]">
+          <ol className="flex-1 space-y-2 overflow-y-auto" aria-live="polite">
+            {chat.map((c, i) => (
+              <li key={i} className={`rounded-2xl p-3 text-sm ${c.from === "you" ? "bg-neutral-100" : "bg-blue-50"}`}>
+                {c.text}
+                {c.changes && <ul className="list-disc ps-5">{c.changes.map((x) => <li key={x}>{x}</li>)}</ul>}
+              </li>
+            ))}
+          </ol>
+          {busy && <p role="status" className="text-sm text-neutral-600">{t(locale, "common.loading")}</p>}
+          {error && (
+            <p role="alert" className="rounded-xl bg-red-50 p-3 text-sm text-red-800">
+              {error} {lastMessage.current && <button className="underline" onClick={() => void sendChat(lastMessage.current)}>{t(locale, "studio.retry")}</button>}
+            </p>
+          )}
+          <form onSubmit={(e) => { e.preventDefault(); const m = msg.trim(); if (!m || busy) return; setMsg(""); void sendChat(m); }} className="flex gap-2">
+            <input value={msg} onChange={(e) => setMsg(e.target.value)} placeholder={t(locale, "hero.placeholder")} aria-label={t(locale, "studio.chat")} className="min-w-0 flex-1 rounded-full border border-neutral-300 px-4 py-2" />
+            <button disabled={busy || !msg.trim()} className="rounded-full bg-[var(--brand)] px-4 py-2 text-white disabled:opacity-40" aria-label={t(locale, "studio.send")}>→</button>
+          </form>
+        </section>
+
+        <section aria-label="Preview" className="space-y-4">
+          <div className="flex flex-wrap items-center justify-center gap-3 text-sm">
+            <select aria-label={t(locale, "studio.lang")} value={opts.locale} onChange={(e) => setPreviewLocale(e.target.value as Locale)} className="rounded border px-2 py-1">
+              {LOCALES.map((l) => <option key={l} value={l}>{LOCALE_NAMES[l]}</option>)}
+            </select>
+            <label className="flex items-center gap-1"><input type="checkbox" checked={dark} onChange={(e) => setDark(e.target.checked)} />{t(locale, "studio.dark")}</label>
+            <label className="flex items-center gap-1"><input type="checkbox" checked={rtl === true} onChange={(e) => setRtl(e.target.checked ? true : null)} />{t(locale, "studio.rtl")}</label>
+            <select aria-label={t(locale, "studio.device")} value={platform} onChange={(e) => setPlatform(e.target.value as "ios" | "android")} className="rounded border px-2 py-1"><option value="ios">iOS</option><option value="android">Android</option></select>
+          </div>
+          <PhonePreview key={app.spec.screens.map((s) => s.id).join() + app.spec.navigation.join()} spec={app.spec} opts={opts} />
+        </section>
+
+        <section aria-label={t(locale, "studio.inspector")} className="lg:max-h-[calc(100vh-140px)] lg:overflow-y-auto">
+          <div role="tablist" className="mb-3 flex gap-2">
+            {(["edit", "history"] as const).map((k) => (
+              <button key={k} role="tab" aria-selected={side === k} onClick={() => setSide(k)} className={`rounded-full px-3 py-1 text-sm ${side === k ? "bg-neutral-900 text-white" : "border border-neutral-300"}`}>
+                {t(locale, k === "edit" ? "studio.inspector" : "studio.history")}
+              </button>
+            ))}
+          </div>
+          {side === "edit"
+            ? <Inspector spec={app.spec} locale={locale} edit={edit} translateWithAi={translateWithAi} llm={me?.server.llm ?? "mock"} busy={busy} />
+            : <HistoryPanel app={app} locale={locale} jump={jump} busy={busy} />}
+        </section>
+      </div>
     </main>
   );
 }

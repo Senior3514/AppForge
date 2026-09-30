@@ -6,7 +6,10 @@
     "build": "turbo build",
     "typecheck": "turbo typecheck",
     "test": "turbo test",
-    "lint": "turbo lint"
+    "lint": "turbo lint",
+    "dev": "node scripts/run.mjs dev",
+    "start": "node scripts/run.mjs start",
+    "e2e": "pnpm --filter @appforge/web e2e"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",

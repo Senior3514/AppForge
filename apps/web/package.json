@@ -3,8 +3,14 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "scripts": { "dev": "next dev", "build": "next build", "typecheck": "tsc -p .", "test": "vitest run --passWithNoTests",
-    "e2e": "playwright test" },
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "typecheck": "tsc -p .",
+    "test": "vitest run --passWithNoTests",
+    "e2e": "playwright test",
+    "start": "next start"
+  },
   "dependencies": {
     "@appforge/generator": "workspace:*",
     "@appforge/i18n": "workspace:*",

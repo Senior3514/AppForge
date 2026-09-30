@@ -90,7 +90,7 @@ export function appRoutes(r: Router, d: Deps) {
     const token = newToken(18);
     const res = await d.db.asTenant(s.tenantId, (q) => q("update apps set preview_token=coalesce(preview_token,$2) where id=$1 returning preview_token", [c.params.id!, token]));
     if (!res.rows[0]) throw new HttpError(404, "App not found");
-    return json({ token: res.rows[0].preview_token });
+    return json({ token: res.rows[0].preview_token, url: `${d.publicUrl}/en/preview/${res.rows[0].preview_token}` });
   });
   r.delete("/v1/apps/:id/share", async (c) => {
     const s = await requireSession(d.db, c);
