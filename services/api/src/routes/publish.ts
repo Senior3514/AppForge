@@ -51,7 +51,7 @@ export function publishRoutes(r: Router, d: Deps) {
     const listing = storeListing(app.spec, await ownerEmail(s.tenantId));
     const screenshots = app.spec.navigation.flatMap((screen) =>
       (["ios", "android"] as const).map((platform) => ({ platform, screen, ...STORE_SCREENSHOT_SIZES[platform], path: `/v1/apps/${app.id}/screenshots/${platform}/${screen}.png` })));
-    return json({ ...listing, screenshots, screenshotsNote: "Generated mock-ups of each tab. Replace with captures from a real device if you prefer." });
+    return json({ ...listing, privacyPolicyUrl: `${d.publicUrl}/${app.spec.locale}/privacy/${app.id}`, screenshots, screenshotsNote: "Generated mock-ups of each tab. Replace with captures from a real device if you prefer." });
   });
 
   // The App Store and Google Play both require a privacy policy URL, so a published app serves its own.

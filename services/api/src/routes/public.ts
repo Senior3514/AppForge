@@ -134,7 +134,7 @@ export function publicRoutes(r: Router, d: Deps) {
     try {
       const checkout = await provider.createCheckout({
         orderId, amountCents: total, currency, description: `${p.spec.name} order`,
-        successUrl: `${d.publicUrl}/pay/success?order=${orderId}`, cancelUrl: `${d.publicUrl}/pay/cancel?order=${orderId}`,
+        successUrl: `${d.publicUrl}/${p.spec.locale}/pay/success?order=${orderId}`, cancelUrl: `${d.publicUrl}/${p.spec.locale}/pay/cancel?order=${orderId}`, locale: p.spec.locale,
         connectedAccountId: p.stripeAccount,
       });
       await d.db.asTenant(p.tenantId, (q) => q("update orders set provider_ref=$2 where id=$1", [orderId, checkout.ref]));

@@ -80,7 +80,7 @@ export function authRoutes(r: Router, d: Deps) {
 
   r.get("/v1/me", async (c) => {
     const s = await sessionOf(d.db, c);
-    if (!s) return json({ user: null });
+    if (!s) return json({ user: null, server: { llm: d.llm.name } });
     const t = (await d.db.system("select plan, plan_status, trial_ends_at from tenants where id=$1", [s.tenantId])).rows[0]!;
     const apps = Number((await d.db.asTenant(s.tenantId, (q) => q("select count(*)::int as n from apps"))).rows[0]!.n);
     const plan = effectivePlan(t.plan as Plan, t.plan_status);
@@ -88,6 +88,8 @@ export function authRoutes(r: Router, d: Deps) {
       user: { email: s.email, anonymous: s.anonymous },
       tenant: { plan: t.plan, status: t.plan_status, effectivePlan: plan, trialEndsAt: t.trial_ends_at ? new Date(t.trial_ends_at).toISOString() : null },
       entitlements: ENTITLEMENTS[plan], usage: { apps },
+      // Lets the UI be honest about demo mode (mock adapters) instead of pretending things are live.
+      server: { llm: d.llm.name, payments: d.adapters.payments.name, push: d.adapters.push.name, builds: d.adapters.builds.name, billing: d.adapters.billing.name },
     });
   });
 

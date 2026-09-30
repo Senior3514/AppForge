@@ -3,6 +3,8 @@ import { createHmac, timingSafeEqual } from "node:crypto";
 export interface CheckoutInput {
   orderId: string; amountCents: number; currency: string; description: string;
   successUrl: string; cancelUrl: string;
+  /** The app's language, so hosted pages can match it. */
+  locale?: string;
   /** The tenant's own Stripe account (Connect), so money goes to them, not to us. */
   connectedAccountId?: string | null;
 }
@@ -22,7 +24,7 @@ export class MockPayments implements PaymentProvider {
   constructor(private baseUrl: string) {}
   async createCheckout(i: CheckoutInput) {
     const ref = `mock_${i.orderId}`;
-    return { ref, url: `${this.baseUrl}/pay/mock/${ref}` };
+    return { ref, url: `${this.baseUrl}/${i.locale ?? "en"}/pay/mock/${ref}` };
   }
   parseWebhook() { return null; }
   async onboard(i: { accountId?: string | null; returnUrl: string }) {
