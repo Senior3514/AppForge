@@ -1,13 +1,21 @@
+# Whole product: `docker compose up --build`, then open http://localhost:3000
+# With no keys in .env everything runs on demo adapters (mock LLM, payments, push, builds).
 services:
   db:
     image: postgres:16
     environment:
       POSTGRES_USER: appforge
-      POSTGRES_PASSWORD: appforge
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-appforge}
       POSTGRES_DB: appforge
-    ports: ["5432:5432"]
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-      - ./services/api/migrations:/docker-entrypoint-initdb.d:ro
+    volumes: [pgdata:/var/lib/postgresql/data]
+    healthcheck: { test: ["CMD-SHELL", "pg_isready -U appforge"], interval: 3s, retries: 20 }
+  app:
+    build: .
+    depends_on: { db: { condition: service_healthy } }
+    env_file: [{ path: .env, required: false }]
+    environment:
+      DATABASE_URL: postgres://appforge:${POSTGRES_PASSWORD:-appforge}@db:5432/appforge
+      APPFORGE_PUBLIC_URL: ${APPFORGE_PUBLIC_URL:-http://localhost:3000}
+    ports: ["3000:3000"]
 volumes:
   pgdata:

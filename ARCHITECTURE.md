@@ -24,6 +24,16 @@ services/generator  prompt → AppSpec pipeline (Claude, repair loop, safety, co
 services/api        Postgres + RLS tenant isolation, auth, storage, realtime, edge handlers
 ```
 
+## Runtime topology
+```
+browser ─► apps/web (Next.js, :3000) ──/api/v1/* runtime proxy──► services/api (:8787) ──► Postgres (RLS)
+phone   ─► apps/runtime (Expo) ──────── /v1/public/* ─────────────► services/api
+```
+The web app never talks to the database. The API runs on embedded Postgres (PGlite, persisted under `.data/pg`) by default and on any Postgres 14+ via `DATABASE_URL`; the same migrations and the same test suite run on both.
+
+## Tenant isolation, concretely
+Every tenant request runs in a transaction that does `SET LOCAL ROLE app_user` and pins `app.tenant_id`; RLS policies on every tenant table compare `tenant_id` to that setting. The privileged owner connection is used only by the auth layer and to resolve a public app id to its tenant. Auth tables are never granted to `app_user`.
+
 ## Boundaries and adapters
 
 Every third-party integration sits behind an interface with a **mock adapter (default)** and a **real adapter behind a feature flag**, so the system boots with zero external keys.
@@ -35,7 +45,8 @@ Every third-party integration sits behind an interface with a **mock adapter (de
 | End-user payments | `PaymentProvider` | in-memory | Stripe Connect (full); PayPal (flag) |
 | SaaS billing | `BillingProvider` | in-memory plans | Stripe Billing |
 | Push | `PushProvider` | log | Expo Push / FCM / APNs |
-| Builds | `BuildProvider` | simulated | EAS Build + Submit |
+| Builds | `BuildProvider` | simulated (labelled as such) | EAS CLI, white-label via env (`apps/runtime/app.config.ts`) |
+| Mail | `Mailer` | logs the link | Resend |
 
 ## Multi-tenancy
 Postgres row-level security on every tenant table; `tenant_id` derived from the JWT, never from request bodies. Storage buckets are namespaced per tenant.

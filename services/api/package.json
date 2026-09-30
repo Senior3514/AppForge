@@ -7,7 +7,8 @@
   "scripts": {
     "dev": "tsx src/server.ts",
     "typecheck": "tsc -p .",
-    "test": "vitest run"
+    "test": "vitest run",
+    "start": "tsx src/server.ts"
   },
   "dependencies": {
     "@appforge/generator": "workspace:*",
