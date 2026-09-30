@@ -9,6 +9,7 @@
     "@appforge/generator": "workspace:*",
     "@appforge/i18n": "workspace:*",
     "@appforge/modules": "workspace:*",
+    "@appforge/plans": "workspace:*",
     "@appforge/spec": "workspace:*",
     "@appforge/ui-tokens": "workspace:*",
     "next": "^15.1.0",

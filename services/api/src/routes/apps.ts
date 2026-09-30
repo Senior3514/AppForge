@@ -6,7 +6,7 @@ import type { PatchOps } from "@appforge/spec";
 import { createTenantAndUser, issueSession, requireSession, sessionOf, type Session } from "../auth";
 import { newToken } from "../crypto";
 import type { Deps } from "../deps";
-import { ENTITLEMENTS, effectivePlan, type Plan } from "../entitlements";
+import { ENTITLEMENTS, effectivePlan, type Plan } from "@appforge/plans";
 import { HttpError, json, type Router } from "../http";
 import { commit, createApp, deleteApp, getApp, listApps, redo, undo } from "../store";
 

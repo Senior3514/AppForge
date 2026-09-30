@@ -5,7 +5,7 @@ import { z } from "zod";
 import type { AppSpec } from "@appforge/modules";
 import type { Deps } from "../deps";
 import { requireSession } from "../auth";
-import { ENTITLEMENTS, effectivePlan, type Plan } from "../entitlements";
+import { ENTITLEMENTS, effectivePlan, type Plan } from "@appforge/plans";
 import { HttpError, json, type Router } from "../http";
 import { getApp, tenantOfApp } from "../store";
 import { BRAND_ASSETS, assetSvg, brandingKit, type BrandAsset } from "../publishing/branding";

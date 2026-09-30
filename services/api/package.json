@@ -14,6 +14,7 @@
     "@appforge/modules": "workspace:*",
     "@appforge/spec": "workspace:*",
     "@appforge/i18n": "workspace:*",
+    "@appforge/plans": "workspace:*",
     "@appforge/ui-tokens": "workspace:*",
     "zod": "^3.23.8",
     "@electric-sql/pglite": "^0.2.15",

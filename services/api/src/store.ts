@@ -3,7 +3,7 @@ import { validateApp, type AppSpec } from "@appforge/modules";
 import { applyPatchOps, diff, describeOps, type PatchOps } from "@appforge/spec";
 import type { Db, Query, Row } from "./db";
 import { HttpError } from "./http";
-import { ENTITLEMENTS, effectivePlan, type Plan } from "./entitlements";
+import { ENTITLEMENTS, effectivePlan, type Plan } from "@appforge/plans";
 
 export interface AppView {
   id: string; name: string; spec: AppSpec; canUndo: boolean; canRedo: boolean;

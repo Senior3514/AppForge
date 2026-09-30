@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { ENTITLEMENTS, TRIAL_DAYS, effectivePlan, isPlan, type Plan } from "../entitlements";
+import { ENTITLEMENTS, TRIAL_DAYS, effectivePlan, isPlan, type Plan } from "@appforge/plans";
 import {
   Credentials, adoptAnonymousDrafts, claimAnonymous, consumeMagicLink, createMagicLink, createTenantAndUser,
   findUserByEmail, issueSession, requireSession, sessionOf, verifyLogin, SESSION_COOKIE,

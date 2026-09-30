@@ -1,5 +1,5 @@
-import type { Plan } from "../entitlements";
-import { TRIAL_DAYS } from "../entitlements";
+import type { Plan } from "@appforge/plans";
+import { TRIAL_DAYS } from "@appforge/plans";
 import { InvalidSignatureError, verifyStripeSignature } from "./payments";
 
 export interface BillingEvent { tenantId: string; plan: Plan; status: "active" | "trialing" | "past_due" | "canceled"; customerId?: string }
