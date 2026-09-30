@@ -72,7 +72,15 @@ async function openPg(url: string): Promise<Db> {
       return out;
     } catch (e) { await c.query("rollback").catch(() => {}); throw e; } finally { c.release(); }
   };
-  await migrate(system);
+  // Several instances may boot at once; an advisory lock makes exactly one of them run the migrations while the rest wait.
+  const lock = await pool.connect();
+  try {
+    await lock.query("select pg_advisory_lock(727274)");
+    await migrate(async (sql, params) => { const r = await lock.query(sql, params as unknown[]); return { rows: r.rows, rowCount: r.rowCount ?? 0 }; });
+  } finally {
+    await lock.query("select pg_advisory_unlock(727274)").catch(() => {});
+    lock.release();
+  }
   return { system, systemTx: (fn) => tx(fn), asTenant: (id, fn) => tx(fn, id), close: () => pool.end() };
 }
 

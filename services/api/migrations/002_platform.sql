@@ -5,6 +5,8 @@
 do $$ begin
   if not exists (select 1 from pg_roles where rolname = 'app_user') then create role app_user nologin; end if;
 end $$;
+-- The connecting user drops to app_user per request (SET LOCAL ROLE); that requires membership, even for non-superuser owners.
+do $$ begin execute format('grant app_user to %I', current_user); end $$;
 
 alter table tenants
   add column stripe_customer_id text,
@@ -124,7 +126,6 @@ declare t text;
 begin
   foreach t in array array['app_data','events','push_devices','push_campaigns','orders','builds'] loop
     execute format('alter table %I enable row level security', t);
-    execute format('alter table %I force row level security', t);
     execute format('create policy %I on %I using (tenant_id = current_tenant()) with check (tenant_id = current_tenant())', t || '_isolation', t);
   end loop;
 end $$;

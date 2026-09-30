@@ -1,5 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { openDb, type Db } from "./db";
+import { testEnv } from "./testkit";
 
 const A = "11111111-1111-1111-1111-111111111111";
 const B = "22222222-2222-2222-2222-222222222222";
@@ -8,7 +9,7 @@ let appA: string;
 let appB: string;
 
 beforeAll(async () => {
-  db = await openDb({});
+  db = await openDb(testEnv());
   await db.system("insert into tenants (id, name) values ($1,'A'), ($2,'B')", [A, B]);
   appA = (await db.system("insert into apps (tenant_id, name, spec) values ($1,'a-app','{}') returning id", [A])).rows[0]!.id;
   appB = (await db.system("insert into apps (tenant_id, name, spec) values ($1,'b-app','{}') returning id", [B])).rows[0]!.id;

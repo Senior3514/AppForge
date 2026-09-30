@@ -1,6 +1,7 @@
 -- Multi-tenant core. Every tenant-owned table carries tenant_id and is protected by RLS.
 -- The request's tenant is set per transaction: SELECT set_config('app.tenant_id', '<uuid>', true);
--- The application role must NOT be a superuser and must NOT own the tables (owners bypass RLS unless FORCE is set).
+-- Tenant requests run as the unprivileged app_user role (not the table owner), so RLS applies to them. The owner connection is the
+-- privileged path used only for auth and app->tenant lookups.
 
 create table tenants (
   id uuid primary key default gen_random_uuid(),
@@ -36,9 +37,6 @@ create function current_tenant() returns uuid language sql stable as
 alter table tenants enable row level security;
 alter table apps enable row level security;
 alter table app_revisions enable row level security;
-alter table tenants force row level security;
-alter table apps force row level security;
-alter table app_revisions force row level security;
 
 create policy tenant_self on tenants using (id = current_tenant());
 create policy apps_isolation on apps

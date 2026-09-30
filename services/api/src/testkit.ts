@@ -1,4 +1,4 @@
-import { createHmac } from "node:crypto";
+import { createHmac, randomUUID } from "node:crypto";
 import { MockLlm } from "@appforge/generator";
 import { createAdapters, type Adapters } from "./adapters";
 import { MockBilling } from "./adapters/billing";
@@ -38,8 +38,11 @@ export const testAdapters = (): Adapters & { mailer: MockMailer; push: MockPush 
   ...createAdapters({}), mailer: new MockMailer(() => {}), push: new MockPush(), payments: new MockPayments("http://web"), billing: new MockBilling(), builds: new MockBuilds(), paypal: null,
 });
 
+/** Set TEST_DATABASE_URL to run the whole suite against a real Postgres instead of the embedded one. */
+export const testEnv = (): Record<string, string | undefined> => (process.env.TEST_DATABASE_URL ? { DATABASE_URL: process.env.TEST_DATABASE_URL } : {});
+
 export const newPlatform = (over: Parameters<typeof createPlatform>[0] = {}) =>
-  createPlatform({ env: {}, llm: new MockLlm(), adapters: testAdapters(), ...over });
+  createPlatform({ env: testEnv(), llm: new MockLlm(), adapters: testAdapters(), ...over });
 
 export const stripeSig = (raw: string, secret: string, t = Math.floor(Date.now() / 1000)) =>
   `t=${t},v1=${createHmac("sha256", secret).update(`${t}.${raw}`).digest("hex")}`;
@@ -47,7 +50,7 @@ export const stripeSig = (raw: string, secret: string, t = Math.floor(Date.now()
 let n = 0;
 export async function signedUp(p: Platform, ip = `10.1.${++n}.1`) {
   const c = client(p, ip);
-  const email = `user${n}@example.com`;
+  const email = `user${n}-${randomUUID().slice(0, 8)}@example.com`;
   const r = await c.call("POST", "/v1/auth/signup", { email, password: "correct horse battery" });
   if (r.status !== 201) throw new Error(`signup failed: ${JSON.stringify(r.body)}`);
   return { c, email };
