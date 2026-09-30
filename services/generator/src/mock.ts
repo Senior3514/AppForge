@@ -7,30 +7,30 @@ const pick = (c: Copy, l: Locale) => (l === "he" ? c.he : c.en);
 
 interface Archetype {
   keywords: RegExp; color: string; name: Copy; tagline: Copy;
-  model: { id: string; field: string; sub?: string; rows: string[] };
+  model: { id: string; field: string; sub?: string; rows: Record<"en" | "he", string[]> };
   listTitle: Copy; extra: "booking" | "catalog" | "loyalty" | "radio" | "none";
 }
 
 const ARCHETYPES: Archetype[] = [
   { keywords: /restaurant|cafe|coffee|pizza|bakery|מסעד|קפה|פיצ|מאפי/i, color: "#b5532a", name: { en: "Corner Kitchen", he: "המטבח שלנו" }, tagline: { en: "Fresh food, made daily", he: "אוכל טרי, מדי יום" },
-    model: { id: "menu", field: "name", sub: "price", rows: ["Signature dish|$12", "Daily special|$9", "House dessert|$6"] }, listTitle: { en: "Menu", he: "תפריט" }, extra: "loyalty" },
+    model: { id: "menu", field: "name", sub: "price", rows: { en: ["Signature dish|$12", "Daily special|$9", "House dessert|$6"], he: ["המנה הקבועה|$12", "מנת היום|$9", "קינוח הבית|$6"] } }, listTitle: { en: "Menu", he: "תפריט" }, extra: "loyalty" },
   { keywords: /salon|barber|hair|beauty|spa|nail|ספר|מספר|יופי|קוסמט/i, color: "#a23b72", name: { en: "Glow Studio", he: "סטודיו גלואו" }, tagline: { en: "Book your next visit in seconds", he: "קבעו תור תוך שניות" },
-    model: { id: "services", field: "name", sub: "price", rows: ["Haircut|$30", "Color|$70", "Styling|$40"] }, listTitle: { en: "Services", he: "שירותים" }, extra: "booking" },
+    model: { id: "services", field: "name", sub: "price", rows: { en: ["Haircut|$30", "Color|$70", "Styling|$40"], he: ["תספורת|$30", "צבע|$70", "עיצוב|$40"] } }, listTitle: { en: "Services", he: "שירותים" }, extra: "booking" },
   { keywords: /fitness|gym|coach|trainer|yoga|workout|כושר|מאמן|יוגה|אימון/i, color: "#1f7a5c", name: { en: "Peak Coach", he: "פיק קואץ'" }, tagline: { en: "Train smarter, every week", he: "מתאמנים חכם, כל שבוע" },
-    model: { id: "classes", field: "name", sub: "time", rows: ["Strength|Mon 18:00", "Mobility|Wed 07:30", "HIIT|Fri 17:00"] }, listTitle: { en: "Classes", he: "שיעורים" }, extra: "booking" },
+    model: { id: "classes", field: "name", sub: "time", rows: { en: ["Strength|Mon 18:00", "Mobility|Wed 07:30", "HIIT|Fri 17:00"], he: ["כוח|שני 18:00", "ניידות|רביעי 07:30", "אינטרוולים|שישי 17:00"] } }, listTitle: { en: "Classes", he: "שיעורים" }, extra: "booking" },
   { keywords: /shop|store|ecommerce|e-commerce|sell|products|boutique|חנות|מכיר|מוצרים/i, color: "#2456c9", name: { en: "Little Shop", he: "החנות הקטנה" }, tagline: { en: "Handpicked things you'll love", he: "מוצרים נבחרים שתאהבו" },
-    model: { id: "products", field: "name", sub: "price", rows: ["Classic tee|$24", "Canvas bag|$18", "Ceramic mug|$14"] }, listTitle: { en: "Shop", he: "חנות" }, extra: "catalog" },
+    model: { id: "products", field: "name", sub: "price", rows: { en: ["Classic tee|$24", "Canvas bag|$18", "Ceramic mug|$14"], he: ["חולצה קלאסית|$24", "תיק בד|$18", "ספל קרמיקה|$14"] } }, listTitle: { en: "Shop", he: "חנות" }, extra: "catalog" },
   { keywords: /radio|podcast|music|station|רדיו|פודקאסט|מוזיקה/i, color: "#6a3fd6", name: { en: "Wave FM", he: "גל FM" }, tagline: { en: "Listen live, anywhere", he: "מאזינים בשידור חי, בכל מקום" },
-    model: { id: "shows", field: "name", sub: "time", rows: ["Morning Drive|07:00", "Midday Mix|12:00", "Night Waves|21:00"] }, listTitle: { en: "Shows", he: "תוכניות" }, extra: "radio" },
+    model: { id: "shows", field: "name", sub: "time", rows: { en: ["Morning Drive|07:00", "Midday Mix|12:00", "Night Waves|21:00"], he: ["בוקר טוב|07:00", "מיקס צהריים|12:00", "גלי לילה|21:00"] } }, listTitle: { en: "Shows", he: "תוכניות" }, extra: "radio" },
 ];
 const FALLBACK: Archetype = { keywords: /$^/, color: "#3457d5", name: { en: "My App", he: "האפליקציה שלי" }, tagline: { en: "Everything in one place", he: "הכול במקום אחד" },
-  model: { id: "items", field: "name", sub: "note", rows: ["First item|New", "Second item|Popular", "Third item|Soon"] }, listTitle: { en: "Explore", he: "גלו" }, extra: "loyalty" };
+  model: { id: "items", field: "name", sub: "note", rows: { en: ["First item|New", "Second item|Popular", "Third item|Soon"], he: ["פריט ראשון|חדש", "פריט שני|פופולרי", "פריט שלישי|בקרוב"] } }, listTitle: { en: "Explore", he: "גלו" }, extra: "loyalty" };
 
 const L = (en: string, he: string): Copy => ({ en, he });
 
 function build(a: Archetype, locale: Locale): AppSpec {
   const sub = a.model.sub;
-  const rows = a.model.rows.map((r) => { const [n, s] = r.split("|"); return { [a.model.field]: n!, ...(sub ? { [sub]: s! } : {}) }; });
+  const rows = a.model.rows[locale === "he" ? "he" : "en"].map((r) => { const [n, s] = r.split("|"); return { [a.model.field]: n!, ...(sub ? { [sub]: s! } : {}) }; });
   const dataModels: AppSpec["dataModels"] = [{ id: a.model.id, fields: [{ name: a.model.field, type: "text" }, ...(sub ? [{ name: sub, type: "text" as const }] : [])], seed: rows }];
   const home: Block[] = [{ id: "hero", module: "hero", props: { headline: pick(a.name, locale), subtitle: pick(a.tagline, locale), cta: pick(L("Get started", "התחילו"), locale) } }];
   const screens: AppSpec["screens"] = [

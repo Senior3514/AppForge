@@ -4,13 +4,26 @@
   "private": true,
   "type": "module",
   "main": "src/index.ts",
-  "scripts": { "dev": "tsx src/server.ts", "typecheck": "tsc -p .", "test": "vitest run" },
+  "scripts": {
+    "dev": "tsx src/server.ts",
+    "typecheck": "tsc -p .",
+    "test": "vitest run"
+  },
   "dependencies": {
     "@appforge/generator": "workspace:*",
     "@appforge/modules": "workspace:*",
     "@appforge/spec": "workspace:*",
     "@appforge/i18n": "workspace:*",
-    "zod": "^3.23.8"
+    "@appforge/ui-tokens": "workspace:*",
+    "zod": "^3.23.8",
+    "@electric-sql/pglite": "^0.2.15",
+    "pg": "^8.13.0",
+    "qrcode": "^1.5.4",
+    "sharp": "^0.33.5"
   },
-  "devDependencies": { "@electric-sql/pglite": "^0.2.15", "tsx": "^4.19.0" }
+  "devDependencies": {
+    "tsx": "^4.19.0",
+    "@types/pg": "^8.11.10",
+    "@types/qrcode": "^1.5.5"
+  }
 }
