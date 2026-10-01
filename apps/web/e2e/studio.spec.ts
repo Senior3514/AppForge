@@ -205,3 +205,12 @@ test("SEO basics: sitemap, robots, hreflang alternates", async ({ request, page 
   await page.goto("/he");
   await expect(page.locator('link[rel="alternate"][hreflang="ar"]')).toHaveCount(1);
 });
+
+test("pricing: plan buttons wait for the session instead of misrouting an early click to signup", async ({ page }) => {
+  // Regression: with a slow /me response, clicking before the session loaded sent signed-in users to signup.
+  await page.route("**/api/v1/me", async (route) => { await new Promise((r) => setTimeout(r, 1500)); await route.continue(); });
+  await page.goto("/en/pricing");
+  const trial = page.getByRole("button", { name: "Start free trial" }).first();
+  await expect(trial).toBeDisabled();
+  await expect(trial).toBeEnabled({ timeout: 10_000 });
+});

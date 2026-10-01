@@ -14,6 +14,7 @@ export function Pricing({ locale }: { locale: Locale }) {
   const [busy, setBusy] = useState<Plan | null>(null);
   const [error, setError] = useState<string | null>(null);
   const current = me?.tenant?.effectivePlan;
+  // Until the session is known we cannot tell "signed out" from "not loaded yet", so the buttons stay disabled (otherwise an early click is misrouted to signup).
   const signedIn = !!me?.user && !me.user.anonymous;
 
   async function choose(plan: Plan) {
@@ -51,7 +52,7 @@ export function Pricing({ locale }: { locale: Locale }) {
               {p === "free" ? (
                 <Link href={`/${locale}`} className="mt-5 rounded-full border border-neutral-300 px-4 py-2 text-center text-sm font-semibold">{t(locale, "pricing.free")}</Link>
               ) : (
-                <button disabled={busy !== null || current === p} onClick={() => void choose(p)} className="mt-5 rounded-full bg-[var(--brand)] px-4 py-2 text-sm font-semibold text-white disabled:opacity-50">
+                <button disabled={me === null || busy !== null || current === p} onClick={() => void choose(p)} className="mt-5 rounded-full bg-[var(--brand)] px-4 py-2 text-sm font-semibold text-white disabled:opacity-50">
                   {current === p ? t(locale, "pricing.current") : t(locale, "pricing.choose")}
                 </button>
               )}
