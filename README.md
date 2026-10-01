@@ -12,4 +12,5 @@ pnpm dev        # http://localhost:3000 — works with no API keys (demo adapter
 - What's verified, what's mocked, and the honest limitations: [PROGRESS.md](PROGRESS.md)
 - Walkthrough: [docs/demo-phase2.md](docs/demo-phase2.md)
 - Adding real keys (Claude, Stripe, Resend, Expo): [docs/go-live.md](docs/go-live.md)
+- Deploying on Supabase + a container host: [docs/deploy.md](docs/deploy.md)
 - Container: `docker compose up --build`

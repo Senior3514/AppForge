@@ -19,7 +19,7 @@ describe("auth", () => {
     expect(s.status).toBe(201);
     expect(s.headers.get("set-cookie")).toMatch(/HttpOnly.*SameSite=Lax/);
     const me = (await c.call("GET", "/v1/me")).body;
-    expect(me.user).toEqual({ email: "ann@example.com", anonymous: false });
+    expect(me.user).toMatchObject({ email: "ann@example.com", anonymous: false });
     expect(me.tenant.plan).toBe("free");
     expect(me.entitlements.maxApps).toBe(1);
     await c.call("POST", "/v1/auth/logout");
@@ -75,7 +75,7 @@ describe("apps lifecycle", () => {
     expect(up.body.claimedDrafts).toBe(true);
     const list = (await c.call("GET", "/v1/apps")).body.apps;
     expect(list.map((a: any) => a.id)).toEqual([created.body.id]);
-    expect((await c.call("GET", "/v1/me")).body.user).toEqual({ email: "keep@example.com", anonymous: false });
+    expect((await c.call("GET", "/v1/me")).body.user).toMatchObject({ email: "keep@example.com", anonymous: false });
   });
 
   it("logging in from an anonymous session adopts its drafts", async () => {

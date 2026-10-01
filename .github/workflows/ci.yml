@@ -29,3 +29,18 @@ jobs:
         env: { CI: "1", EXPO_NO_TELEMETRY: "1" }
       - run: pnpm --filter @appforge/runtime exec expo export --platform ios --output-dir dist-ios
         env: { CI: "1", EXPO_NO_TELEMETRY: "1" }
+
+  # Builds the production image and checks that it boots and serves both the API and the web app.
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker build -t appforge .
+      - run: docker run -d --name af -p 3000:3000 -p 8787:8787 appforge
+      - run: |
+          for i in $(seq 1 60); do curl -fs http://localhost:8787/health && break; sleep 2; done
+          curl -fs http://localhost:8787/health | grep -q '"llm":"mock"'
+          curl -fs http://localhost:3000/en | grep -qi appforge
+          curl -fs http://localhost:3000/api/v1/me | grep -q '"user":null'
+      - if: failure()
+        run: docker logs af

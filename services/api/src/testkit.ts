@@ -6,6 +6,7 @@ import { MockMailer } from "./adapters/mailer";
 import { MockPayments } from "./adapters/payments";
 import { MockPush } from "./adapters/push";
 import { MockBuilds } from "./adapters/builds";
+import { sealer } from "./crypto";
 import { createPlatform, type Platform } from "./platform";
 
 export interface Client {
@@ -42,7 +43,7 @@ export const testAdapters = (): Adapters & { mailer: MockMailer; push: MockPush 
 export const testEnv = (): Record<string, string | undefined> => (process.env.TEST_DATABASE_URL ? { DATABASE_URL: process.env.TEST_DATABASE_URL } : {});
 
 export const newPlatform = (over: Parameters<typeof createPlatform>[0] = {}) =>
-  createPlatform({ env: testEnv(), llm: new MockLlm(), adapters: testAdapters(), ...over });
+  createPlatform({ env: testEnv(), llm: new MockLlm(), adapters: testAdapters(), sealer: sealer("test-secret"), ...over });
 
 export const stripeSig = (raw: string, secret: string, t = Math.floor(Date.now() / 1000)) =>
   `t=${t},v1=${createHmac("sha256", secret).update(`${t}.${raw}`).digest("hex")}`;

@@ -2,7 +2,7 @@ import { z } from "zod";
 import { ENTITLEMENTS, TRIAL_DAYS, effectivePlan, isPlan, type Plan } from "@appforge/plans";
 import {
   Credentials, adoptAnonymousDrafts, claimAnonymous, consumeMagicLink, createMagicLink, createTenantAndUser,
-  findUserByEmail, issueSession, requireSession, sessionOf, verifyLogin, SESSION_COOKIE,
+  createAuthToken, findUserByEmail, issueSession, requireSession, sessionOf, verifyLogin, SESSION_COOKIE,
 } from "../auth";
 import { HttpError, cookieHeader, json, type Router } from "../http";
 import type { Deps } from "../deps";
@@ -24,6 +24,11 @@ export function authRoutes(r: Router, d: Deps) {
     return json(body, status, { "set-cookie": s.cookie });
   };
 
+  const sendVerification = async (userId: string, email: string) => {
+    const token = await createAuthToken(d.db, userId, "verify");
+    await d.adapters.mailer.send(email, "Confirm your AppForge email", `Confirm your email: ${d.publicUrl}/en/verify?token=${token}\nThis link works once and expires in 24 hours.`);
+  };
+
   r.post("/v1/auth/signup", async (c) => {
     if (!d.limiter.allow(`signup:${c.ip}`, 10, 3_600_000)) throw new HttpError(429, "Too many attempts. Try again later.");
     const { email, password } = parse(Credentials, await c.body());
@@ -31,9 +36,11 @@ export function authRoutes(r: Router, d: Deps) {
     const current = await sessionOf(d.db, c);
     if (current?.anonymous) {
       await claimAnonymous(d.db, current, email, password);
+      await sendVerification(current.userId, email);
       return json({ email, claimedDrafts: true });
     }
     const s = await createTenantAndUser(d.db, { email, passwordHash: await hashPassword(password), anonymous: false });
+    await sendVerification(s.userId, email);
     return respondWithSession(s.userId, { email, claimedDrafts: false }, 201);
   });
 
@@ -42,6 +49,7 @@ export function authRoutes(r: Router, d: Deps) {
     const { email, password } = parse(Credentials, await c.body());
     const u = await verifyLogin(d.db, email, password);
     if (!u) throw new HttpError(401, "Incorrect email or password");
+    if (u.blocked) throw new HttpError(403, "This account has been suspended");
     const anon = await sessionOf(d.db, c);
     if (anon) await adoptAnonymousDrafts(d.db, anon, u.tenant_id);
     return respondWithSession(u.id, { email });
@@ -70,11 +78,14 @@ export function authRoutes(r: Router, d: Deps) {
     const existing = await findUserByEmail(d.db, email);
     const anon = await sessionOf(d.db, c);
     let userId: string;
+    if (existing?.blocked) throw new HttpError(403, "This account has been suspended");
     if (existing) { userId = existing.id; if (anon) await adoptAnonymousDrafts(d.db, anon, existing.tenant_id); }
     else if (anon?.anonymous) {
       await d.db.system("update users set email=$2, anonymous=false where id=$1", [anon.userId, email]);
       userId = anon.userId;
     } else userId = (await createTenantAndUser(d.db, { email, passwordHash: null, anonymous: false })).userId;
+    // Receiving the link proves the mailbox is theirs.
+    await d.db.system("update users set email_verified_at = coalesce(email_verified_at, now()) where id=$1", [userId]);
     return respondWithSession(userId, { email });
   });
 
@@ -84,8 +95,10 @@ export function authRoutes(r: Router, d: Deps) {
     const t = (await d.db.system("select plan, plan_status, trial_ends_at from tenants where id=$1", [s.tenantId])).rows[0]!;
     const apps = Number((await d.db.asTenant(s.tenantId, (q) => q("select count(*)::int as n from apps"))).rows[0]!.n);
     const plan = effectivePlan(t.plan as Plan, t.plan_status);
+    const hasOwnKey = (await d.db.asTenant(s.tenantId, (q) => q("select 1 from ai_providers"))).rows.length > 0;
     return json({
-      user: { email: s.email, anonymous: s.anonymous },
+      aiSource: hasOwnKey ? "user" : d.llm.name === "mock" ? "mock" : "platform",
+      user: { email: s.email, anonymous: s.anonymous, verified: s.verified, operator: !!(s.email && s.verified && d.operatorEmails.has(s.email)) },
       tenant: { plan: t.plan, status: t.plan_status, effectivePlan: plan, trialEndsAt: t.trial_ends_at ? new Date(t.trial_ends_at).toISOString() : null },
       entitlements: ENTITLEMENTS[plan], usage: { apps },
       // Lets the UI be honest about demo mode (mock adapters) instead of pretending things are live.

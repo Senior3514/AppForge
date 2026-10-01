@@ -6,7 +6,9 @@ The product runs without any of this (demo mode). To make each part real, set it
 |---|---|---|
 | Real AI generation | `APPFORGE_FLAG_REAL_LLM=true`, `ANTHROPIC_API_KEY` | Not yet exercised against the live API: try one prompt first and check cost (`costUsd` in the create response). |
 | Voice input | `APPFORGE_FLAG_REAL_TRANSCRIBE=true`, `TRANSCRIBE_API_URL`, `TRANSCRIBE_API_KEY` | Any Whisper-compatible `/audio/transcriptions`. The browser sends the UI language (`he` for Hebrew). |
-| Sign-in emails | `RESEND_API_KEY`, `MAIL_FROM` | Without it, magic links print in the server log. |
+| Users' own AI keys (Settings → AI provider) | `APPFORGE_SECRET` (random, 32+ bytes) | Keys are AES-256-GCM encrypted at rest and never returned to the browser. Without the secret on a real database the feature switches itself off. OpenRouter, Anthropic and OpenAI only (fixed URLs). |
+| Operator console | `APPFORGE_OPERATOR_EMAILS` | Operator must also have a *verified* email (signup mail or magic link). |
+| Sign-in, verification and reset emails | `RESEND_API_KEY`, `MAIL_FROM` | Without it, links (sign-in, verify, reset) print in the server log. |
 | Customer payments | `APPFORGE_FLAG_STRIPE=true`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`; enable Connect in Stripe; webhook → `POST {PUBLIC_URL}/api/v1/webhooks/payments` | Money goes to each owner's own connected account. Enable Apple Pay / Google Pay in the Stripe dashboard. |
 | Your subscriptions | same Stripe keys + `STRIPE_PRICE_STARTER/PRO/BUSINESS`; webhook → `/api/v1/webhooks/billing` (events `customer.subscription.*`) | Create the prices in Stripe (the $ amounts in the UI are placeholders). |
 | Push | `APPFORGE_FLAG_PUSH=true`; users' builds need APNs/FCM credentials in EAS | Uses Expo Push Service. |

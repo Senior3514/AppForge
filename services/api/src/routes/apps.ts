@@ -8,6 +8,7 @@ import { newToken } from "../crypto";
 import type { Deps } from "../deps";
 import { ENTITLEMENTS, effectivePlan, type Plan } from "@appforge/plans";
 import { HttpError, json, type Router } from "../http";
+import { llmFor, providerError, recordUsage } from "../ai";
 import { commit, createApp, deleteApp, getApp, listApps, redo, undo } from "../store";
 
 const CreateBody = z.object({ prompt: z.string(), locale: z.enum(LOCALES).optional() });
@@ -44,8 +45,10 @@ export function appRoutes(r: Router, d: Deps) {
     }
     if (!d.limiter.allow(`gen:${session.tenantId}`, session.anonymous ? 5 : 40, 3_600_000)) throw new HttpError(429, "Generation limit reached. Try again in a while.");
     try {
-      const gen = await generateApp(body.prompt, { llm: d.llm, locale: body.locale, cache: d.cache });
+      const ai = await llmFor(d, session.tenantId);
+      const gen = await generateApp(body.prompt, { llm: ai.llm, locale: body.locale, cache: ai.source === "user" ? undefined : d.cache }).catch((e) => { throw e instanceof GenerationError || ai.source !== "user" ? e : providerError(ai, e); });
       const view = await createApp(d.db, session.tenantId, gen.spec);
+      if (!gen.cached) await recordUsage(d, session.tenantId, "generate", ai.source, gen.usage, gen.costUsd);
       return json({ ...view, costUsd: gen.costUsd, cached: gen.cached }, 201, setCookie ? { "set-cookie": setCookie } : {});
     } catch (e) {
       if (e instanceof GenerationError) throw new HttpError(422, e.message, e.errors);
@@ -63,7 +66,9 @@ export function appRoutes(r: Router, d: Deps) {
     if (!d.limiter.allow(`chat:${s.tenantId}`, s.anonymous ? 15 : 120, 3_600_000)) throw new HttpError(429, "Too many changes in a short time. Try again in a while.");
     const current = await getApp(d.db, s.tenantId, c.params.id!);
     try {
-      const out = await iterateApp(current.spec, message, { llm: d.llm });
+      const ai = await llmFor(d, s.tenantId);
+      const out = await iterateApp(current.spec, message, { llm: ai.llm }).catch((e) => { throw e instanceof GenerationError || ai.source !== "user" ? e : providerError(ai, e); });
+      await recordUsage(d, s.tenantId, "patch", ai.source, out.usage, out.costUsd);
       if (out.ops.length === 0) return json({ ...current, changes: [], note: "no_change" });
       const res = await commit(d.db, s.tenantId, current.id, out.ops as PatchOps, { label: message, source: "ai" });
       return json({ ...res.view, changes: res.changes, ops: res.ops, costUsd: out.costUsd });
