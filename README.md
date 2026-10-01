@@ -1,6 +1,6 @@
 # AppForge
 
-Describe an app in plain language (text or voice, 8 languages incl. Hebrew/Arabic RTL) and get a working native-app preview in seconds. Keep improving it by chatting or with a visual editor, share a QR preview, collect bookings/orders/analytics, send push notifications, and prepare the store listing and build.
+Describe an app in plain language (text or voice, English and Hebrew with full RTL; English by default) and get a working native-app preview in seconds. Keep improving it by chatting or with a visual editor, share a QR preview, collect bookings/orders/analytics, send push notifications, and prepare the store listing and build.
 
 The AI never writes app code: it composes vetted modules into a validated **AppSpec** JSON document that one universal Expo runtime renders. See [ARCHITECTURE.md](ARCHITECTURE.md).
 

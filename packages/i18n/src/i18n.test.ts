@@ -2,9 +2,10 @@ import { describe, expect, it } from "vitest";
 import { EXAMPLES, EXAMPLE_KEYS, LOCALES, MESSAGES, dirOf, t, tf, type MessageKey } from "./index";
 
 describe("i18n", () => {
-  it("has exactly 8 locales with RTL for he and ar only", () => {
-    expect(LOCALES).toHaveLength(8);
-    expect(LOCALES.filter((l) => dirOf(l) === "rtl")).toEqual(["he", "ar"]);
+  it("has exactly English and Hebrew, English first and default, with Hebrew the only RTL", () => {
+    expect(LOCALES).toEqual(["en", "he"]);
+    expect(LOCALES[0]).toBe("en");
+    expect(LOCALES.filter((l) => dirOf(l) === "rtl")).toEqual(["he"]);
   });
   it("every locale defines every key with non-empty text", () => {
     const keys = Object.keys(MESSAGES.en);
@@ -27,7 +28,7 @@ describe("i18n", () => {
     }
   });
   it("tf fills placeholders and leaves unknown ones visible", () => {
-    expect(tf("en", "feat.apps", { n: 3 })).toBe("Up to 3 apps");
+    expect(tf("en", "feat.apps", { n: 3 })).toBe("Apps: 3");
     expect(tf("he", "feat.apps", { n: 3 })).toContain("3");
     expect(tf("en", "dash.plan", {})).toBe("Plan: {plan}");
   });

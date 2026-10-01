@@ -20,4 +20,4 @@
 | @react-native-async-storage/async-storage | MIT |
 | @playwright/test | Apache-2.0 |
 
-Fonts referenced by name only (Inter, Heebo, Nunito, Lora, Noto Sans Hebrew / Arabic: SIL OFL) and DejaVu (free license, installed in the container for server-side rendering). None are redistributed in this repository.
+Fonts referenced by name only (Inter, Heebo, Nunito, Lora, Noto Sans Hebrew: SIL OFL) and DejaVu (free license, installed in the container for server-side rendering). None are redistributed in this repository.

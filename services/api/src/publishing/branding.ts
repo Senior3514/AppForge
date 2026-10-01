@@ -50,10 +50,9 @@ export function nameSuggestions(spec: AppSpec): string[] {
 }
 
 const PAIRS = { modern: ["Inter", "Inter"], classic: ["Lora", "Inter"], rounded: ["Nunito", "Nunito"] } as const;
+const HEBREW_FONTS = { heading: "Heebo", body: "Heebo", note: "Heebo covers Hebrew and Latin with matching weights." };
 export function typography(spec: AppSpec) {
-  const script = scriptOf(spec.locale);
-  if (script === "hebrew") return { heading: "Heebo", body: "Heebo", note: "Heebo covers Hebrew and Latin with matching weights." };
-  if (script === "arabic") return { heading: "Noto Sans Arabic", body: "Noto Sans Arabic", note: "Noto Sans Arabic covers Arabic and Latin." };
+  if (scriptOf(spec.locale) === "hebrew") return HEBREW_FONTS;
   const [heading, body] = PAIRS[spec.theme.font];
   return { heading, body, note: "Open-licensed Google Fonts (SIL OFL)." };
 }

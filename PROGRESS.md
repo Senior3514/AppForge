@@ -12,7 +12,7 @@ Run `pnpm install && pnpm dev` and open http://localhost:3000 — no keys needed
 | Chat iteration | "add a loyalty tab" → JSON Patch → new revision | API + e2e |
 | Revisions | Undo / redo / jump back, AI and manual edits alike, persisted | API + e2e (incl. reload) |
 | Visual editor | Name, tagline, colour, radius, font, drag-and-drop tabs, screens, add/remove/reorder modules, edit content rows, per-language copy | unit tests for every patch + e2e |
-| Preview | Phone frame, iOS/Android, dark, RTL, any of 8 languages; share link + QR; public read-only preview page | e2e |
+| Preview | Phone frame, iOS/Android, dark, RTL, English or Hebrew; share link + QR; public read-only preview page | e2e |
 | Auth | Email+password (scrypt), magic link, sessions; signup claims the anonymous draft; login adopts it | API tests |
 | Multi-tenancy | Postgres RLS on every tenant table; tenant A gets 404 on every endpoint for tenant B's app | API tests on **embedded and real Postgres 16**, also with a non-superuser owner |
 | Publishing | Snapshot publish (edits stay private until republished), unpublish, hosted privacy-policy page | API + e2e |
@@ -24,7 +24,7 @@ Run `pnpm install && pnpm dev` and open http://localhost:3000 — no keys needed
 | Store prep | Branding kit (icons/splash PNG at exact store sizes, adaptive icon, palette, fonts, names), store listing within store limits, privacy policy + data-safety answers derived from the app's real features, screenshot mock-ups | API tests incl. pixel-size/alpha checks, visual check |
 | Builds | White-label build via EAS CLI (name, bundle id, app id from env) | adapter unit-tested with a fake exec; **never run against EAS** |
 | Runtime | Expo app renders any AppSpec natively; loads by share token or published id; submits bookings, sends analytics, registers push, checks out, persists loyalty | logic unit-tested; **bundles for Android and iOS** |
-| i18n | 235 UI strings × 8 languages (type-checked complete, placeholder-consistent), RTL (he, ar) | unit + e2e |
+| i18n | 265 UI strings in English (default) and Hebrew, type-checked complete and placeholder-consistent; full RTL for Hebrew; the generator writes complete English and Hebrew apps | unit + e2e |
 | Site | Landing (hero, how it works, demo gallery, modules, pricing, FAQ), sitemap, robots, hreflang, OG image | e2e |
 
 Test totals: 9 packages, ~190 unit/integration tests + 9 browser tests, typecheck strict everywhere.
@@ -55,7 +55,8 @@ Each integration needs its flag **and** its credentials; otherwise the mock runs
 - Rate limiting is in-process; running several API instances needs a shared store. `X-Forwarded-For` must come from a trusted reverse proxy.
 - Plan prices are placeholders ($0/19/49/149); create real prices in Stripe.
 - Custom admin domains are an entitlement flag only; there is no domain-mapping feature yet.
-- The landing gallery and mock generator only write English and Hebrew copy; other languages need the real LLM (the editor supports typing translations by hand).
+- **The Hebrew UI text was written by an AI, not reviewed by a native speaker**; have it reviewed before a public launch. Only English and Hebrew are supported by design (more languages are a small addition to `packages/i18n`).
+- Server-rendered images (icons, store screenshots) need a font with Hebrew glyphs installed (the Dockerfile installs Noto); a bare server without one shows empty boxes for Hebrew text.
 
 ## Next
 1. Put real keys in `.env` and walk the checklist in `docs/go-live.md` (Claude, Stripe, Resend, Expo).

@@ -18,6 +18,12 @@ describe("generateApp (mock)", () => {
     expect(spec.screens.map((s) => s.id)).toContain(screen);
   });
 
+  it("detects Hebrew by script and defaults to English", () => {
+    expect(detectLocale("אפליקציה למסעדה")).toBe("he");
+    expect(detectLocale("a cafe app")).toBe("en");
+    expect(detectLocale("une appli pour mon café")).toBe("en");
+  });
+
   it("detects Hebrew and produces an RTL-locale app with Hebrew copy", async () => {
     expect(detectLocale("אפליקציה למסעדה")).toBe("he");
     const { spec } = await generateApp("אפליקציה למסעדה שלי", { llm });

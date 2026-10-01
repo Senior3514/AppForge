@@ -47,9 +47,9 @@ export function AuthForm({ locale, mode }: { locale: Locale; mode: "login" | "si
     finally { setBusy(false); }
   }
 
-  const input = "w-full rounded-xl border border-neutral-300 px-4 py-2.5";
+  const input = "w-full rounded-xl border border-slate-300 px-4 py-2.5";
   return (
-    <main className="mx-auto max-w-md px-4 py-12">
+    <main className="bg-aurora min-h-[70vh] px-4 py-14"><div className="glass mx-auto max-w-md rounded-3xl p-8">
       <h1 className="mb-6 text-2xl font-bold">{t(locale, mode === "login" ? "auth.loginTitle" : "auth.signupTitle")}</h1>
       {mode === "signup" && <p className="mb-4 rounded-xl bg-blue-50 p-3 text-sm text-blue-900">{t(locale, "auth.claim")}</p>}
       <form onSubmit={submit} className="space-y-4">
@@ -58,19 +58,19 @@ export function AuthForm({ locale, mode }: { locale: Locale; mode: "login" | "si
         </label>
         <label className="block text-sm font-medium">{t(locale, "auth.password")}
           <input type="password" required minLength={8} autoComplete={mode === "login" ? "current-password" : "new-password"} value={password} onChange={(e) => setPassword(e.target.value)} className={`${input} mt-1`} />
-          {mode === "signup" && <span className="mt-1 block text-xs font-normal text-neutral-600">{t(locale, "auth.passwordHint")}</span>}
+          {mode === "signup" && <span className="mt-1 block text-xs font-normal text-slate-600">{t(locale, "auth.passwordHint")}</span>}
         </label>
         {error && <p role="alert" className="text-sm text-red-700">{error}</p>}
         {magicSent && <p role="status" className="text-sm text-green-800">{t(locale, "auth.magicSent")}</p>}
-        <button disabled={busy} className="w-full rounded-full bg-[var(--brand)] px-6 py-3 font-semibold text-white disabled:opacity-50">
+        <button disabled={busy} className="btn-primary w-full px-6 py-3">
           {t(locale, mode === "login" ? "auth.submitLogin" : "auth.submitSignup")}
         </button>
-        <button type="button" onClick={magic} disabled={busy || !email} className="w-full rounded-full border border-neutral-300 px-6 py-3 text-sm disabled:opacity-50">{t(locale, "auth.magic")}</button>
+        <button type="button" onClick={magic} disabled={busy || !email} className="w-full rounded-full border border-slate-300 px-6 py-3 text-sm disabled:opacity-50">{t(locale, "auth.magic")}</button>
       </form>
-      <p className="mt-6 text-sm text-neutral-700">
+      <p className="mt-6 text-sm text-slate-700">
         {t(locale, mode === "login" ? "auth.noAccount" : "auth.haveAccount")}{" "}
         <Link className="font-semibold underline" href={`/${locale}/${mode === "login" ? "signup" : "login"}`}>{t(locale, mode === "login" ? "nav.signup" : "nav.login")}</Link>
       </p>
-    </main>
+    </div></main>
   );
 }

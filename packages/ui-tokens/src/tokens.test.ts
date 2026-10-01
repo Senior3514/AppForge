@@ -13,5 +13,5 @@ describe("ui-tokens", () => {
       }
   });
   it("rejects bad hex", () => expect(() => paletteFromPrimary("red")).toThrow());
-  it("picks script fonts", () => expect([scriptOf("he"), scriptOf("ar"), scriptOf("en")]).toEqual(["hebrew", "arabic", "latin"]));
+  it("picks script fonts", () => expect([scriptOf("he"), scriptOf("en")]).toEqual(["hebrew", "latin"]));
 });

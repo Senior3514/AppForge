@@ -34,12 +34,9 @@ export function sanitizePrompt(raw: string): string {
   return clean;
 }
 
-/** Cheap script-based detection so Hebrew/Arabic/Cyrillic prompts default to a matching locale. */
+/** Hebrew script → Hebrew; anything else → English. The caller can always pass a locale explicitly. */
 export function detectLocale(text: string): Locale {
-  if (/[֐-׿]/.test(text)) return "he";
-  if (/[؀-ۿ]/.test(text)) return "ar";
-  if (/[Ѐ-ӿ]/.test(text)) return "ru";
-  return "en";
+  return /[\u0590-\u05FF]/.test(text) ? "he" : "en";
 }
 
 const PatchSchema = z.object({ ops: z.array(z.object({ op: z.enum(["add", "remove", "replace"]), path: z.string(), value: z.unknown().optional() })).max(40) });

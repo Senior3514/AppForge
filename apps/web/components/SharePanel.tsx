@@ -21,17 +21,17 @@ export function SharePanel({ appId, locale, onShared }: { appId: string; locale:
   }
 
   return (
-    <div className="space-y-3 rounded-2xl border border-neutral-200 bg-white p-4 shadow-lg">
+    <div className="space-y-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-lg">
       {!link ? (
         <button onClick={create} disabled={busy} className="rounded-full bg-[var(--brand)] px-4 py-2 text-sm font-semibold text-white disabled:opacity-50">{t(locale, "studio.share")}</button>
       ) : (
         <>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={`/api/v1/apps/${appId}/share/qr.svg`} alt="QR" width={180} height={180} className="mx-auto" />
-          <p className="text-xs text-neutral-600">{t(locale, "studio.shareHint")}</p>
+          <p className="text-xs text-slate-600">{t(locale, "studio.shareHint")}</p>
           <div className="flex items-center gap-2">
-            <input readOnly value={link.url} aria-label="link" className="min-w-0 flex-1 rounded-lg border border-neutral-300 px-2 py-1 text-xs" dir="ltr" onFocus={(e) => e.target.select()} />
-            <button onClick={copy} className="rounded-lg border border-neutral-300 px-2 py-1 text-xs">{copied ? t(locale, "studio.copied") : t(locale, "studio.copy")}</button>
+            <input readOnly value={link.url} aria-label="link" className="min-w-0 flex-1 rounded-lg border border-slate-300 px-2 py-1 text-xs" dir="ltr" onFocus={(e) => e.target.select()} />
+            <button onClick={copy} className="rounded-lg border border-slate-300 px-2 py-1 text-xs">{copied ? t(locale, "studio.copied") : t(locale, "studio.copy")}</button>
           </div>
           <button onClick={revoke} className="text-xs text-red-700 underline">{t(locale, "studio.revoke")}</button>
         </>

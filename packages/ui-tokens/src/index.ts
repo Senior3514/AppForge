@@ -4,16 +4,13 @@ export const spacing = { xs: 4, sm: 8, md: 12, lg: 16, xl: 24, xxl: 32 } as cons
 export const radius = { sm: 8, md: 14, lg: 22, pill: 999 } as const;
 export const fontSize = { caption: 12, body: 16, title: 20, headline: 28, display: 40 } as const;
 
-/** Font stacks per script; Hebrew and Arabic need explicit families for good rendering. */
+/** Font stacks per script. Hebrew needs an explicit family to render well. */
 export const fontFamily = {
   latin: "Inter, system-ui, sans-serif",
   hebrew: "Heebo, 'Noto Sans Hebrew', system-ui, sans-serif",
-  arabic: "'Noto Sans Arabic', system-ui, sans-serif",
-  cyrillic: "Inter, system-ui, sans-serif",
 } as const;
 
-export const scriptOf = (locale: string): keyof typeof fontFamily =>
-  locale === "he" ? "hebrew" : locale === "ar" ? "arabic" : locale === "ru" ? "cyrillic" : "latin";
+export const scriptOf = (locale: string): keyof typeof fontFamily => (locale === "he" ? "hebrew" : "latin");
 
 const hex = /^#[0-9a-fA-F]{6}$/;
 const toRgb = (c: string): [number, number, number] => {

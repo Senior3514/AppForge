@@ -31,7 +31,7 @@ export function AppAdmin({ locale, appId }: { locale: Locale; appId: string }) {
   useEffect(() => { void load(); }, [load]);
 
   if (error) return <main className="p-10">404</main>;
-  if (!app) return <main className="p-10 text-neutral-600" aria-busy>{t(locale, "common.loading")}</main>;
+  if (!app) return <main className="p-10 text-slate-600" aria-busy>{t(locale, "common.loading")}</main>;
   const currency = app.spec.screens.flatMap((s) => s.blocks).find((b) => b.module === "catalog")?.props.currency ?? "USD";
   const label = { publish: "admin.publish", data: "admin.data", analytics: "admin.analytics", orders: "admin.orders", push: "admin.push", brand: "admin.brand" } as const;
 
@@ -44,7 +44,7 @@ export function AppAdmin({ locale, appId }: { locale: Locale; appId: string }) {
       <div role="tablist" className="mb-6 flex flex-wrap gap-2">
         {TABS.map((k) => (
           <button key={k} role="tab" aria-selected={tab === k} onClick={() => router.replace(`/${locale}/apps/${appId}?tab=${k}`)}
-            className={`rounded-full px-4 py-1.5 text-sm ${tab === k ? "bg-neutral-900 text-white" : "border border-neutral-300"}`}>{t(locale, label[k])}</button>
+            className={`rounded-full px-4 py-1.5 text-sm ${tab === k ? "bg-slate-900 text-white" : "border border-slate-300"}`}>{t(locale, label[k])}</button>
         ))}
       </div>
       {tab === "publish" && <PublishTab app={app} locale={locale} server={me?.server ?? { llm: "mock" }} refresh={load} />}

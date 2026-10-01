@@ -13,7 +13,7 @@ import { PhonePreview } from "./PhonePreview";
 import { SharePanel } from "./SharePanel";
 
 interface ChatLine { from: "you" | "ai"; text: string; changes?: string[] }
-const btn = "rounded-full border border-neutral-300 px-3 py-1 text-sm disabled:opacity-40";
+const btn = "rounded-full border border-slate-300 bg-white px-3.5 py-1.5 text-sm shadow-sm transition hover:bg-slate-50 disabled:opacity-40";
 
 export function Studio({ locale, appId }: { locale: Locale; appId: string }) {
   const { me } = useMe();
@@ -64,11 +64,11 @@ export function Studio({ locale, appId }: { locale: Locale; appId: string }) {
   const translateWithAi = (target: Locale) => void sendChat(`Translate every customer-visible text into ${LOCALE_NAMES[target]} by filling translations.${target} (keys are the source strings).`);
 
   if (error === "404") return <main className="p-10">404</main>;
-  if (!app) return <main className="p-10 text-neutral-600" aria-busy>{error ?? t(locale, "studio.loading")}</main>;
+  if (!app) return <main className="p-10 text-slate-600" aria-busy>{error ?? t(locale, "studio.loading")}</main>;
 
   const opts = { locale: previewLocale ?? app.spec.locale, dark, rtl, platform };
   return (
-    <main className="mx-auto max-w-[1400px] px-4 py-4">
+    <main className="mx-auto max-w-[1400px] px-4 py-4"><div aria-hidden className="bg-aurora fixed inset-0 -z-10 opacity-70" />
       <div className="mb-4 flex flex-wrap items-center gap-2">
         <h1 className="me-2 truncate text-lg font-bold">{app.name}</h1>
         <button className={btn} disabled={!app.canUndo || busy} onClick={undo}>↶ {t(locale, "studio.undo")}</button>
@@ -77,7 +77,7 @@ export function Studio({ locale, appId }: { locale: Locale; appId: string }) {
           <button className={btn} aria-expanded={showShare} onClick={() => setShowShare((v) => !v)}>📱 {t(locale, "studio.share")}</button>
           {showShare && <div className="absolute end-0 z-20 mt-2 w-72"><SharePanel appId={appId} locale={locale} onShared={() => void api<AppView>(`/apps/${appId}`).then(setApp)} /></div>}
         </div>
-        <Link href={`/${locale}/apps/${appId}?tab=publish`} className="rounded-full bg-[var(--brand)] px-4 py-1.5 text-sm font-semibold text-white">{t(locale, "studio.manage")}</Link>
+        <Link href={`/${locale}/apps/${appId}?tab=publish`} className="btn-primary px-5 py-1.5 text-sm">{t(locale, "studio.manage")}</Link>
       </div>
 
       {me?.user?.anonymous && (
@@ -89,21 +89,21 @@ export function Studio({ locale, appId }: { locale: Locale; appId: string }) {
         <section aria-label={t(locale, "studio.chat")} className="flex min-h-[320px] flex-col gap-3 lg:max-h-[calc(100vh-140px)]">
           <ol className="flex-1 space-y-2 overflow-y-auto" aria-live="polite">
             {chat.map((c, i) => (
-              <li key={i} className={`rounded-2xl p-3 text-sm ${c.from === "you" ? "bg-neutral-100" : "bg-blue-50"}`}>
+              <li key={i} className={`rounded-2xl p-3 text-sm shadow-sm ${c.from === "you" ? "bg-white ring-1 ring-slate-200" : "bg-indigo-50 ring-1 ring-indigo-100"}`}>
                 {c.text}
                 {c.changes && <ul className="list-disc ps-5">{c.changes.map((x) => <li key={x}>{x}</li>)}</ul>}
               </li>
             ))}
           </ol>
-          {busy && <p role="status" className="text-sm text-neutral-600">{t(locale, "common.loading")}</p>}
+          {busy && <p role="status" className="text-sm text-slate-600">{t(locale, "common.loading")}</p>}
           {error && (
             <p role="alert" className="rounded-xl bg-red-50 p-3 text-sm text-red-800">
               {error} {lastMessage.current && <button className="underline" onClick={() => void sendChat(lastMessage.current)}>{t(locale, "studio.retry")}</button>}
             </p>
           )}
           <form onSubmit={(e) => { e.preventDefault(); const m = msg.trim(); if (!m || busy) return; setMsg(""); void sendChat(m); }} className="flex gap-2">
-            <input value={msg} onChange={(e) => setMsg(e.target.value)} placeholder={t(locale, "hero.placeholder")} aria-label={t(locale, "studio.chat")} className="min-w-0 flex-1 rounded-full border border-neutral-300 px-4 py-2" />
-            <button disabled={busy || !msg.trim()} className="rounded-full bg-[var(--brand)] px-4 py-2 text-white disabled:opacity-40" aria-label={t(locale, "studio.send")}>→</button>
+            <input value={msg} onChange={(e) => setMsg(e.target.value)} placeholder={t(locale, "hero.placeholder")} aria-label={t(locale, "studio.chat")} className="min-w-0 flex-1 rounded-full border border-slate-300 bg-white px-4 py-2 shadow-sm" />
+            <button disabled={busy || !msg.trim()} className="btn-primary px-4 py-2" aria-label={t(locale, "studio.send")}>→</button>
           </form>
         </section>
 
@@ -122,7 +122,7 @@ export function Studio({ locale, appId }: { locale: Locale; appId: string }) {
         <section aria-label={t(locale, "studio.inspector")} className="lg:max-h-[calc(100vh-140px)] lg:overflow-y-auto">
           <div role="tablist" className="mb-3 flex gap-2">
             {(["edit", "history"] as const).map((k) => (
-              <button key={k} role="tab" aria-selected={side === k} onClick={() => setSide(k)} className={`rounded-full px-3 py-1 text-sm ${side === k ? "bg-neutral-900 text-white" : "border border-neutral-300"}`}>
+              <button key={k} role="tab" aria-selected={side === k} onClick={() => setSide(k)} className={`rounded-full px-3 py-1 text-sm ${side === k ? "bg-slate-900 text-white" : "border border-slate-300"}`}>
                 {t(locale, k === "edit" ? "studio.inspector" : "studio.history")}
               </button>
             ))}
