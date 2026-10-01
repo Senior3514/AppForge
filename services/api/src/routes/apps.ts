@@ -66,7 +66,7 @@ export function appRoutes(r: Router, d: Deps) {
       const out = await iterateApp(current.spec, message, { llm: d.llm });
       if (out.ops.length === 0) return json({ ...current, changes: [], note: "no_change" });
       const res = await commit(d.db, s.tenantId, current.id, out.ops as PatchOps, { label: message, source: "ai" });
-      return json({ ...res.view, changes: res.changes, costUsd: out.costUsd });
+      return json({ ...res.view, changes: res.changes, ops: res.ops, costUsd: out.costUsd });
     } catch (e) {
       if (e instanceof GenerationError) throw new HttpError(422, e.message, e.errors);
       throw e;
@@ -78,7 +78,7 @@ export function appRoutes(r: Router, d: Deps) {
     const s = await requireSession(d.db, c);
     const body = parse(EditBody, await c.body());
     const res = await commit(d.db, s.tenantId, c.params.id!, body.ops as PatchOps, { label: body.label, source: "manual" });
-    return json({ ...res.view, changes: res.changes });
+    return json({ ...res.view, changes: res.changes, ops: res.ops });
   });
 
   r.post("/v1/apps/:id/undo", async (c) => json(await undo(d.db, (await requireSession(d.db, c)).tenantId, c.params.id!)));

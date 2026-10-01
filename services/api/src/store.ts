@@ -75,13 +75,13 @@ export async function commit(db: Db, tenantId: string, id: string, ops: PatchOps
     try { after = checkSpec(applyPatchOps(before, ops)); }
     catch (e) { if (e instanceof HttpError) throw e; throw new HttpError(422, "The change could not be applied", [(e as Error).message]); }
     const patch = diff(before, after);
-    if (patch.length === 0) return { view: (await viewOf(q, id))!, changes: [] as string[] };
+    if (patch.length === 0) return { view: (await viewOf(q, id))!, changes: [] as string[], ops: [] as PatchOps };
     const cursor = app.rev_cursor as number;
     await q("delete from app_revisions where app_id=$1 and seq>$2", [id, cursor]);
     await q("insert into app_revisions (tenant_id, app_id, seq, label, source, patch, inverse) values ($1,$2,$3,$4,$5,$6::jsonb,$7::jsonb)",
       [tenantId, id, cursor + 1, meta.label.slice(0, 120), meta.source, j(patch), j(diff(after, before))]);
     await q("update apps set spec=$2::jsonb, name=$3, rev_cursor=$4, updated_at=now() where id=$1", [id, j(after), after.name, cursor + 1]);
-    return { view: (await viewOf(q, id))!, changes: describeOps(patch) };
+    return { view: (await viewOf(q, id))!, changes: describeOps(patch), ops: patch };
   });
 }
 

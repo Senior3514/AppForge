@@ -71,6 +71,18 @@ export const en = {
   "mod.contact.t": "Contact and location", "mod.contact.d": "Address, phone and opening hours.",
   "mod.radio.t": "Audio stream", "mod.radio.d": "Play a live radio or audio stream.",
   "mod.announcements.t": "Announcements", "mod.announcements.d": "News feed with optional push notifications.",
+  "change.added": "Added {what}",
+  "change.changed": "Changed {what}",
+  "change.removed": "Removed {what}",
+  "change.name": "the app name",
+  "change.tagline": "the tagline",
+  "change.theme": "the theme",
+  "change.navigation": "the tab bar",
+  "change.screens": "a screen or its content",
+  "change.dataModels": "a content row",
+  "change.translations": "a translation",
+  "change.features": "a feature",
+  "change.other": "a setting",
 } as const;
 
 export type MessageKey = keyof typeof en;

@@ -49,7 +49,7 @@ export function AppAdmin({ locale, appId }: { locale: Locale; appId: string }) {
       </div>
       {tab === "publish" && <PublishTab app={app} locale={locale} server={me?.server ?? { llm: "mock" }} refresh={load} />}
       {tab === "data" && <DataTab appId={appId} spec={app.spec} locale={locale} />}
-      {tab === "analytics" && <AnalyticsTab appId={appId} locale={locale} currency={currency} />}
+      {tab === "analytics" && <AnalyticsTab appId={appId} locale={locale} currency={currency} screenTitles={Object.fromEntries(app.spec.screens.map((s) => [s.id, s.title]))} />}
       {tab === "orders" && <OrdersTab appId={appId} locale={locale} server={me?.server ?? { llm: "mock" }} />}
       {tab === "push" && <PushTab appId={appId} locale={locale} />}
       {tab === "brand" && <BrandTab appId={appId} locale={locale} />}

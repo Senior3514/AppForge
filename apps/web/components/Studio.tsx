@@ -5,6 +5,7 @@ import { LOCALES, LOCALE_NAMES, t, type Locale } from "@appforge/i18n";
 import { ApiError, api } from "../lib/api";
 import type { Op } from "../lib/ops";
 import type { AppView } from "../lib/types";
+import { describeChanges } from "../lib/changes";
 import { useMe } from "../lib/useMe";
 import { HistoryPanel } from "./HistoryPanel";
 import { Inspector } from "./Inspector";
@@ -37,7 +38,7 @@ export function Studio({ locale, appId }: { locale: Locale; appId: string }) {
   }, [appId, locale]);
 
   /** Runs one server call that returns the new AppView, with shared busy/error handling. */
-  const run = useCallback(async (fn: () => Promise<AppView & { changes?: string[]; note?: string }>, onOk?: (r: AppView & { changes?: string[]; note?: string }) => void) => {
+  const run = useCallback(async (fn: () => Promise<AppView & { changes?: string[]; ops?: Op[]; note?: string }>, onOk?: (r: AppView & { changes?: string[]; ops?: Op[]; note?: string }) => void) => {
     setBusy(true); setError(null);
     try { const r = await fn(); setApp(r); onOk?.(r); }
     catch (e) { setError(e instanceof ApiError ? e.message : t(locale, "common.error")); }
@@ -48,7 +49,7 @@ export function Studio({ locale, appId }: { locale: Locale; appId: string }) {
     lastMessage.current = message;
     setChat((c) => [...c, { from: "you", text: message }]);
     return run(() => api(`/apps/${appId}/chat`, { method: "POST", body: { message } }),
-      (r) => setChat((c) => [...c, { from: "ai", text: r.changes?.length ? "" : t(locale, "studio.noChange"), changes: r.changes }]));
+      (r) => setChat((c) => [...c, { from: "ai", text: r.ops?.length ? "" : t(locale, "studio.noChange"), changes: r.ops ? describeChanges(locale, r.ops) : undefined }]));
   }, [appId, locale, run]);
 
   const edit = useCallback((ops: Op[], label: string) => run(() => api(`/apps/${appId}/edit`, { method: "POST", body: { label, ops } })), [appId, run]);
