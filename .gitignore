@@ -10,3 +10,5 @@ dist-ios
 next-env.d.ts
 test-results
 playwright-report
+
+desktop/node_modules

@@ -18,7 +18,7 @@ async function generate(page: Page, chip: string, locale = "en") {
   await expect(page).toHaveURL(/\/studio\/[0-9a-f-]{36}/);
 }
 
-test("anonymous: prompt → persisted app → chat edit → undo; survives reload", async ({ page }) => {
+test("prompt → persisted app → chat edit → undo; survives reload", async ({ page }) => {
   await generate(page, "Salon booking");
   await expect(phone(page).getByRole("tab", { name: "Book" })).toBeVisible();
   await expect(phone(page).getByRole("tab", { name: "Rewards" })).toHaveCount(0);
@@ -72,37 +72,8 @@ test("inspector: rename, tab reorder, add module, edit data row, translation; hi
   expect(await hist.getByRole("listitem").count()).toBeGreaterThanOrEqual(5);
 });
 
-test("signup keeps the anonymous draft; dashboard lists it; logout/login round-trips", async ({ page }) => {
-  await generate(page, "Fitness coach");
-  const studioUrl = page.url();
-  await page.getByRole("link", { name: "Get started" }).first().click();
-  const e = email();
-  await page.getByLabel("Email").fill(e);
-  await page.getByLabel("Password").fill("correct horse battery");
-  await page.getByRole("button", { name: "Create account" }).click();
-  await expect(page).toHaveURL(/\/dashboard/);
-  await expect(page.getByRole("link", { name: "Open studio" })).toBeVisible();
-  await page.getByRole("link", { name: "Open studio" }).click();
-  await expect(page).toHaveURL(studioUrl);
-
-  await page.getByRole("button", { name: "Sign out" }).click();
-  await page.goto("/en/login");
-  await page.getByLabel("Email").fill(e);
-  await page.getByLabel("Password").fill("wrong password");
-  await page.getByRole("button", { name: "Sign in", exact: true }).last().click();
-  await expect(page.getByText("Incorrect email or password.")).toBeVisible();
-  await page.getByLabel("Password").fill("correct horse battery");
-  await page.getByRole("button", { name: "Sign in", exact: true }).last().click();
-  await expect(page).toHaveURL(/\/dashboard/);
-});
-
 test("publish → public spec; QR share link opens a public preview; revoke closes it", async ({ page, browser }) => {
   await generate(page, "Salon booking");
-  await page.getByRole("link", { name: "Get started" }).first().click();
-  await page.getByLabel("Email").fill(email());
-  await page.getByLabel("Password").fill("correct horse battery");
-  await page.getByRole("button", { name: "Create account" }).click();
-  await page.getByRole("link", { name: "Open studio" }).click();
 
   await page.getByRole("button", { name: /Preview on your phone/ }).click();
   await page.getByRole("button", { name: "Preview on your phone", exact: true }).last().click();
@@ -128,22 +99,11 @@ test("publish → public spec; QR share link opens a public preview; revoke clos
   await expect(page.getByText("Create a Google Play Console account")).toBeVisible();
 });
 
-test("admin: store listing, brand kit, builds need a plan then run in demo mode; bookings inbox", async ({ page, request }) => {
+test("admin: store listing, brand kit, builds run in demo mode; bookings inbox", async ({ page, request }) => {
   await generate(page, "Salon booking");
-  await page.getByRole("link", { name: "Get started" }).first().click();
-  await page.getByLabel("Email").fill(email());
-  await page.getByLabel("Password").fill("correct horse battery");
-  await page.getByRole("button", { name: "Create account" }).click();
   await page.getByRole("link", { name: "Manage" }).click();
 
   await page.getByRole("button", { name: "Publish now" }).click();
-  await page.getByRole("button", { name: "Start build" }).click();
-  await expect(page.getByText("Store builds need a paid plan.")).toBeVisible();
-
-  await page.goto("/en/pricing");
-  await page.getByRole("button", { name: "Start free trial" }).first().click();
-  await expect(page).toHaveURL(/\/dashboard/);
-  await page.getByRole("link", { name: "Manage" }).click();
   await page.getByRole("button", { name: "Start build" }).click();
   await expect(page.getByText(/SIMULATED build/)).toBeVisible();
   await expect(page.getByText("Demo mode: no real build is produced.")).toBeVisible();
@@ -166,10 +126,6 @@ test("admin: store listing, brand kit, builds need a plan then run in demo mode;
 
 test("push campaign is recorded; demo-mode is stated honestly", async ({ page }) => {
   await generate(page, "Restaurant");
-  await page.getByRole("link", { name: "Get started" }).first().click();
-  await page.getByLabel("Email").fill(email());
-  await page.getByLabel("Password").fill("correct horse battery");
-  await page.getByRole("button", { name: "Create account" }).click();
   await page.getByRole("link", { name: "Manage" }).click();
   await page.getByRole("tab", { name: "Notifications" }).click();
   await expect(page.getByText("Demo mode: messages are recorded")).toBeVisible();
@@ -189,30 +145,20 @@ test("Hebrew: prompt chip → RTL app; landing is RTL", async ({ page }) => {
   await expect(page.getByRole("button", { name: "הזמנת תורים למספרה" })).toBeVisible();
 });
 
-test("landing: sections, gallery, pricing and FAQ render; language switch keeps the page", async ({ page }) => {
+test("landing: sections, gallery and FAQ render; language switch keeps the page", async ({ page }) => {
   await page.goto("/en");
-  for (const h of ["How it works", "Made with AppForge", "Everything your app needs", "Simple pricing", "Questions"]) await expect(page.getByRole("heading", { name: h })).toBeVisible();
+  for (const h of ["How it works", "Made with AppForge", "Everything your app needs", "Questions"]) await expect(page.getByRole("heading", { name: h })).toBeVisible();
   expect(await page.getByTestId("phone").count()).toBe(6); // 3 floating in the hero + 3 in the gallery
-  await page.goto("/en/pricing");
   await page.getByLabel("Language").selectOption("he");
-  await expect(page).toHaveURL(/\/he\/pricing/);
-  await expect(page.getByRole("heading", { name: "תמחור פשוט" })).toBeVisible();
+  await expect(page).toHaveURL(/\/he$/);
+  await expect(page.getByRole("heading", { name: "שאלות" })).toBeVisible();
 });
 
 test("SEO basics: sitemap, robots, hreflang alternates", async ({ request, page }) => {
-  expect(await (await request.get("/sitemap.xml")).text()).toContain("/he/pricing");
+  expect(await (await request.get("/sitemap.xml")).text()).toContain("/he");
   expect(await (await request.get("/robots.txt")).text()).toContain("Disallow: /api/");
   await page.goto("/he");
   await expect(page.locator('link[rel="alternate"][hreflang="he"]')).toHaveCount(1);
-});
-
-test("pricing: plan buttons wait for the session instead of misrouting an early click to signup", async ({ page }) => {
-  // Regression: with a slow /me response, clicking before the session loaded sent signed-in users to signup.
-  await page.route("**/api/v1/me", async (route) => { await new Promise((r) => setTimeout(r, 1500)); await route.continue(); });
-  await page.goto("/en/pricing");
-  const trial = page.getByRole("button", { name: "Start free trial" }).first();
-  await expect(trial).toBeDisabled();
-  await expect(trial).toBeEnabled({ timeout: 10_000 });
 });
 
 test("English is the default and there are exactly two languages: English (LTR) and Hebrew (RTL)", async ({ page }) => {
@@ -226,18 +172,31 @@ test("English is the default and there are exactly two languages: English (LTR) 
   expect((await page.goto("/fr"))?.status()).toBe(404);
 });
 
-test("settings: add your own AI key (never shown back), password change, account deletion", async ({ page }) => {
-  const addr = email();
-  await page.goto("/en/signup");
-  await page.waitForLoadState("networkidle");
-  await page.getByLabel("Email").fill(addr);
-  await page.getByLabel("Password").fill("correct horse battery");
-  await page.getByRole("button", { name: "Create account" }).click();
-  await expect(page).toHaveURL(/dashboard/);
-  // unverified email + demo generator are both called out
-  await expect(page.getByText("Please confirm your email address")).toBeVisible();
-  await expect(page.getByTestId("ai-banner")).toBeVisible();
 
+test("desktop agent: no sign-in anywhere, signed in as the built-in owner", async ({ page, request }) => {
+  await page.goto("/en");
+  await page.waitForLoadState("networkidle");
+  await expect(page.getByRole("link", { name: /Sign in|Get started|Pricing/ })).toHaveCount(0);
+  await expect(page.getByRole("link", { name: "My apps" })).toBeVisible();
+  const me = await (await request.get("/api/v1/me")).json();
+  expect(me.server.local).toBe(true);
+  expect(me.user).toMatchObject({ anonymous: false, verified: true });
+  expect((await request.get("/en/login")).status()).toBe(404);
+});
+
+test("desktop agent: a web page on another origin cannot act as the owner", async ({ request }) => {
+  const evil = await request.post("/api/v1/apps", { headers: { origin: "https://evil.example", "content-type": "text/plain" }, data: JSON.stringify({ prompt: "coffee shop" }) });
+  expect(evil.status()).toBe(403);
+  const crossSite = await request.post("/api/v1/apps", { headers: { "sec-fetch-site": "cross-site" }, data: { prompt: "coffee shop" } });
+  expect(crossSite.status()).toBe(403);
+  const rebinding = await request.get("/api/v1/me", { headers: { host: "attacker.example:3111" } });
+  expect(rebinding.status()).toBe(403);
+  // the API port itself refuses anyone without the launcher's key
+  expect((await request.get("http://127.0.0.1:8787/v1/me")).status()).toBe(403);
+  expect((await request.get("http://127.0.0.1:8787/health")).status()).toBe(200);
+});
+
+test("settings: add your own AI key; it is never shown back and can be removed", async ({ page }) => {
   await page.goto("/en/settings");
   await page.waitForLoadState("networkidle");
   await expect(page.getByTestId("ai-active")).toContainText("Demo generator");
@@ -249,28 +208,22 @@ test("settings: add your own AI key (never shown back), password change, account
   await expect(page.locator("body")).not.toContainText("test-key-wxyz");
   await page.reload();
   await expect(page.locator("body")).not.toContainText("test-key-wxyz");
-
   await page.getByRole("button", { name: "Remove key" }).click();
   await expect(page.getByTestId("ai-active")).toContainText("Demo generator");
-
-  await page.getByRole("tab", { name: "Account" }).click();
-  await page.getByLabel("Current password").fill("correct horse battery");
-  await page.getByLabel("New password").fill("another long passphrase");
-  await page.getByRole("button", { name: "Save password" }).click();
-  await expect(page.getByText("Password changed")).toBeVisible();
-
-  await page.getByLabel("Type your email to confirm").fill(addr);
-  await page.getByLabel("Password", { exact: true }).fill("another long passphrase");
-  await page.getByRole("button", { name: "Delete my account" }).click();
-  await expect(page).toHaveURL(/\/en$/);
-  const r = await page.request.post("/api/v1/auth/login", { data: { email: addr, password: "another long passphrase" } });
-  expect(r.status()).toBe(401);
 });
 
-test("forgot password page: always confirms, never reveals whether the email exists", async ({ page }) => {
-  await page.goto("/en/forgot");
-  await page.waitForLoadState("networkidle");
-  await page.getByLabel("Email").fill("nobody-here@example.com");
-  await page.getByRole("button", { name: "Send reset link" }).click();
-  await expect(page.getByRole("status")).toContainText("If an account exists");
+test.describe("public site (no agent)", () => {
+  test.use({ baseURL: "http://localhost:3112" });
+  test("landing is a download page: OS button, no prompt box, no account links, bilingual", async ({ page }) => {
+    await page.goto("/en");
+    await page.waitForLoadState("networkidle");
+    await expect(page.getByTestId("download-main").first()).toBeVisible();
+    await expect(page.getByTestId("download-main").first()).toHaveAttribute("href", /releases\/latest\/download\/AppForge-(mac-arm64\.dmg|win\.exe|linux\.AppImage)$/);
+    await expect(page.getByRole("textbox")).toHaveCount(0);
+    await expect(page.getByRole("link", { name: /Sign in|Pricing/ })).toHaveCount(0);
+    await expect(page.getByRole("heading", { name: "Install it on your computer" })).toBeVisible();
+    await page.goto("/he");
+    await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
+    await expect(page.getByRole("heading", { name: "מתקינים אצלכם במחשב" })).toBeVisible();
+  });
 });

@@ -5,15 +5,20 @@ import { CtaBand } from "../../components/CtaBand";
 import { Faq } from "../../components/Faq";
 import { Gallery } from "../../components/Gallery";
 import { Hero } from "../../components/Hero";
-import { Pricing } from "../../components/Pricing";
+import { DownloadSection } from "../../components/Download";
+import { isLocalAgent } from "../../lib/mode";
 import { IconTile, StepArt } from "../../components/art";
+
+// Public site vs. desktop agent is decided at runtime by the launcher, not at build time.
+export const dynamic = "force-dynamic";
 
 export default async function Landing({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   if (!isLocale(locale)) notFound();
+  const local = isLocalAgent();
   return (
     <>
-      <Hero locale={locale} />
+      <Hero locale={locale} local={local} />
       <main className="mx-auto max-w-6xl px-4">
         <section aria-labelledby="how" className="py-16">
           <h2 id="how" className="text-3xl font-bold tracking-tight sm:text-4xl">{t(locale, "how.title")}</h2>
@@ -46,9 +51,9 @@ export default async function Landing({ params }: { params: Promise<{ locale: st
           </ul>
         </section>
 
-        <Pricing locale={locale} />
+        {!local && <DownloadSection locale={locale} />}
         <Faq locale={locale} />
-        <CtaBand locale={locale} />
+        <CtaBand locale={locale} local={local} />
       </main>
     </>
   );

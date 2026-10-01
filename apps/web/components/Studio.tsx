@@ -32,8 +32,7 @@ export function Studio({ locale, appId }: { locale: Locale; appId: string }) {
 
   useEffect(() => {
     api<AppView>(`/apps/${appId}`).then(setApp).catch((e) => {
-      if (e instanceof ApiError && e.status === 401) window.location.href = `/${locale}/login?next=/${locale}/studio/${appId}`;
-      else setError(e instanceof ApiError && e.status === 404 ? "404" : t(locale, "common.error"));
+      setError(e instanceof ApiError && e.status === 404 ? "404" : t(locale, "common.error"));
     });
   }, [appId, locale]);
 
@@ -79,11 +78,6 @@ export function Studio({ locale, appId }: { locale: Locale; appId: string }) {
         </div>
         <Link href={`/${locale}/apps/${appId}?tab=publish`} className="btn-primary px-5 py-1.5 text-sm">{t(locale, "studio.manage")}</Link>
       </div>
-
-      {me?.user?.anonymous && (
-        <p className="mb-4 rounded-xl bg-blue-50 p-3 text-sm text-blue-900">{t(locale, "auth.claim")}{" "}
-          <Link className="font-semibold underline" href={`/${locale}/signup?next=/${locale}/studio/${appId}`}>{t(locale, "nav.signup")}</Link></p>
-      )}
 
       <div className="grid gap-6 lg:grid-cols-[320px_1fr_340px]">
         <section aria-label={t(locale, "studio.chat")} className="flex min-h-[320px] flex-col gap-3 lg:max-h-[calc(100vh-140px)]">

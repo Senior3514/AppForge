@@ -3,6 +3,12 @@
 ## Scope note
 The master prompt I received contained sections 0, 1, 3.1–3.3 and 11. Sections 2 and 4–10 were not included, so the module list, plan limits and some UX details are my own choices.
 
+## Product shape (current)
+- **Desktop agent** (`desktop/`, Electron): one installer per OS. It starts the bundled API + web on loopback, in *local mode* (`APPFORGE_LOCAL`): one built-in owner, no sign-in, unlimited plan, data in the user's app-data folder, their own AI key encrypted on disk. Every API request must carry a per-launch key that only the local web proxy knows, and the proxy refuses foreign `Origin`/`Host`, so a web page the user visits cannot drive their local app (tested).
+- **Public site**: the same web build without the key shows a download page (no prompt box, no accounts, no pricing).
+- **Dormant**: the hosted multi-user mode (signup, email verification, password reset, plans, operator console) is still in the API with its tests, but has no UI and is not shipped. It can be revived for a cloud edition.
+- **Supabase**: not used by the agent. The empty `AppForge` Supabase project is untouched; it would only matter for a future cloud sync/license service.
+
 ## What works today (verified)
 Run `pnpm install && pnpm dev` and open http://localhost:3000 — no keys needed (demo adapters).
 
@@ -27,7 +33,7 @@ Run `pnpm install && pnpm dev` and open http://localhost:3000 — no keys needed
 | i18n | 265 UI strings in English (default) and Hebrew, type-checked complete and placeholder-consistent; full RTL for Hebrew; the generator writes complete English and Hebrew apps | unit + e2e |
 | Site | Landing (hero, how it works, demo gallery, modules, pricing, FAQ), sitemap, robots, hreflang, OG image | e2e |
 
-| Accounts | Signup/login, email verification, password reset (single-use, revokes sessions), change password, data export, account deletion, operator console with block | API tests (incl. squatted operator address) + e2e |
+| Accounts (hosted mode, dormant) | Signup/login, email verification, password reset (single-use, revokes sessions), change password, data export, account deletion, operator console with block | API tests (incl. squatted operator address) + e2e |
 | Own AI key per workspace | OpenRouter / Anthropic / OpenAI key in Settings; AES-256-GCM at rest, never returned, last 4 shown; test button; usage metering; fixed provider URLs; provider failures shown as 502 with the provider's message | API tests with a fake provider (request URL/auth/model asserted) + e2e |
 
 Test totals: 9 packages, ~210 unit/integration tests + 13 browser tests, typecheck strict everywhere.
@@ -47,6 +53,9 @@ Each integration needs its flag **and** its credentials; otherwise the mock runs
 | Database | embedded Postgres (PGlite) | any Postgres via `DATABASE_URL` (Supabase: see docs/deploy.md) | **Yes** (Postgres 16); **Supabase itself not tried** |
 
 ## Honest limitations
+- **Installers: only Linux was exercised.** The bundled agent and the *unpacked* Linux Electron app were started here (under a virtual display), served the UI, built an app and kept data across restarts. The macOS/Windows installers and the Linux AppImage are produced by `release.yml`, which has never run; expect first-run fixes. Installers are **unsigned**, so Windows SmartScreen / macOS Gatekeeper will warn (the download page says so). No auto-update yet.
+- **Phone preview/QR only works on the same computer** in the agent (servers bind to loopback for safety); sharing a preview to a phone needs a tunnel or a cloud edition.
+- Desktop agent has no multi-user: one owner per computer.
 - **Nobody has run this against live Claude/Stripe/Expo/EAS/Resend yet.** Expect first-contact fixes when real keys are added. The "about a minute" generation target is unmeasured for the real LLM.
 - **Store publishing needs the owner's own Apple Developer ($99/yr) and Google Play Console accounts.** Apple and Google review every app; approval and timing cannot be guaranteed. The checklist says which steps are the user's.
 - The native runtime has not been run on a device or simulator (no device here). Maestro flows are not written.

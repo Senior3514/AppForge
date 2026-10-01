@@ -1,0 +1,17 @@
+{
+  "name": "appforge-desktop",
+  "version": "0.1.0",
+  "private": true,
+  "description": "AppForge desktop agent: builds native apps from a description, running entirely on your computer.",
+  "author": "AppForge",
+  "main": "main.mjs",
+  "type": "module",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder --publish never"
+  },
+  "devDependencies": {
+    "electron": "^33.2.0",
+    "electron-builder": "^25.1.8"
+  }
+}

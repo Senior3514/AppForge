@@ -1,0 +1,10 @@
+appId: com.appforge.desktop
+productName: AppForge
+directories: { output: ../dist/installers, buildResources: build }
+files: [main.mjs, launcher.mjs, package.json]
+# The bundled agent (scripts/build-agent.mjs) travels next to the app, outside the asar archive, so its servers can run as real files.
+extraResources: [{ from: ../dist/agent, to: agent }]
+mac:  { target: [dmg], category: public.app-category.developer-tools, artifactName: "AppForge-mac-${arch}.${ext}" }
+win:  { target: [nsis], artifactName: "AppForge-win.${ext}" }
+nsis: { oneClick: false, allowToChangeInstallationDirectory: true }
+linux: { target: [AppImage], category: Development, artifactName: "AppForge-linux.${ext}" }

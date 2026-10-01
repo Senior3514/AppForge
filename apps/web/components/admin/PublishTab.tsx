@@ -68,7 +68,6 @@ export function PublishTab({ app, locale, server, refresh }: { app: AppView; loc
           ))}
         </ul>
         <p className="mt-3 text-xs text-slate-600">{t(locale, "pub.ownNote")}</p>
-        {items.some((i) => i.id === "plan" && i.status === "blocked") && <Link className="mt-2 inline-block text-sm font-semibold underline" href={`/${locale}/pricing`}>{t(locale, "dash.upgrade")}</Link>}
       </section>
 
       <section className={card}>
