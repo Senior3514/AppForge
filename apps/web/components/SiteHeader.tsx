@@ -27,6 +27,8 @@ export function SiteHeader({ locale }: { locale: Locale }) {
         <Link href={`/${locale}`} className="flex items-center gap-2 text-lg font-bold tracking-tight"><Logo />AppForge</Link>
         <Link href={`/${locale}/pricing`} className="text-slate-700 hover:underline">{t(locale, "nav.pricing")}</Link>
         {me?.user && <Link href={`/${locale}/dashboard`} className="text-slate-700 hover:underline">{t(locale, "nav.dashboard")}</Link>}
+        {signedIn && <Link href={`/${locale}/settings`} className="text-slate-700 hover:underline">{t(locale, "nav.settings")}</Link>}
+        {me?.user?.operator && <Link href={`/${locale}/operator`} className="text-slate-700 hover:underline">{t(locale, "nav.operator")}</Link>}
         <span className="ms-auto" />
         <label className="sr-only" htmlFor="lang">Language</label>
         <select id="lang" value={locale} onChange={(e) => router.push(pathname.replace(/^\/[a-z]{2}(?=\/|$)/, `/${e.target.value}`))} className="rounded border border-slate-300 px-2 py-1">

@@ -11,6 +11,7 @@ export class AnthropicLlm implements LlmClient {
     const f = this.o.fetchImpl ?? fetch;
     const res = await f(`${this.o.baseUrl ?? "https://api.anthropic.com"}/v1/messages`, {
       method: "POST",
+      signal: AbortSignal.timeout(120_000),
       headers: { "content-type": "application/json", "x-api-key": this.o.apiKey, "anthropic-version": "2023-06-01" },
       body: JSON.stringify({
         model: this.o.model ?? "claude-sonnet-5-5",

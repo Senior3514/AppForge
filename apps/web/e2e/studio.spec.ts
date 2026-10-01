@@ -225,3 +225,52 @@ test("English is the default and there are exactly two languages: English (LTR) 
   await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
   expect((await page.goto("/fr"))?.status()).toBe(404);
 });
+
+test("settings: add your own AI key (never shown back), password change, account deletion", async ({ page }) => {
+  const addr = email();
+  await page.goto("/en/signup");
+  await page.waitForLoadState("networkidle");
+  await page.getByLabel("Email").fill(addr);
+  await page.getByLabel("Password").fill("correct horse battery");
+  await page.getByRole("button", { name: "Create account" }).click();
+  await expect(page).toHaveURL(/dashboard/);
+  // unverified email + demo generator are both called out
+  await expect(page.getByText("Please confirm your email address")).toBeVisible();
+  await expect(page.getByTestId("ai-banner")).toBeVisible();
+
+  await page.goto("/en/settings");
+  await page.waitForLoadState("networkidle");
+  await expect(page.getByTestId("ai-active")).toContainText("Demo generator");
+  await page.getByLabel("API key").fill("sk-or-test-key-wxyz1234");
+  await page.getByRole("button", { name: "Save", exact: true }).click();
+  await expect(page.getByText("Saved.")).toBeVisible();
+  await expect(page.getByTestId("ai-active")).toContainText("your own key");
+  await expect(page.getByText("ending in 1234")).toBeVisible();
+  await expect(page.locator("body")).not.toContainText("test-key-wxyz");
+  await page.reload();
+  await expect(page.locator("body")).not.toContainText("test-key-wxyz");
+
+  await page.getByRole("button", { name: "Remove key" }).click();
+  await expect(page.getByTestId("ai-active")).toContainText("Demo generator");
+
+  await page.getByRole("tab", { name: "Account" }).click();
+  await page.getByLabel("Current password").fill("correct horse battery");
+  await page.getByLabel("New password").fill("another long passphrase");
+  await page.getByRole("button", { name: "Save password" }).click();
+  await expect(page.getByText("Password changed")).toBeVisible();
+
+  await page.getByLabel("Type your email to confirm").fill(addr);
+  await page.getByLabel("Password", { exact: true }).fill("another long passphrase");
+  await page.getByRole("button", { name: "Delete my account" }).click();
+  await expect(page).toHaveURL(/\/en$/);
+  const r = await page.request.post("/api/v1/auth/login", { data: { email: addr, password: "another long passphrase" } });
+  expect(r.status()).toBe(401);
+});
+
+test("forgot password page: always confirms, never reveals whether the email exists", async ({ page }) => {
+  await page.goto("/en/forgot");
+  await page.waitForLoadState("networkidle");
+  await page.getByLabel("Email").fill("nobody-here@example.com");
+  await page.getByRole("button", { name: "Send reset link" }).click();
+  await expect(page.getByRole("status")).toContainText("If an account exists");
+});

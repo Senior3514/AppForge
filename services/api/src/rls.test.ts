@@ -19,7 +19,7 @@ afterAll(() => db.close());
 describe("migrations", () => {
   it("are idempotent when reopened logic re-runs (recorded in _migrations)", async () => {
     const r = await db.system("select name from _migrations order by name");
-    expect(r.rows.map((x) => x.name)).toEqual(["001_init.sql", "002_platform.sql"]);
+    expect(r.rows.map((x) => x.name)).toEqual(["001_init.sql", "002_platform.sql", "003_accounts_ai.sql"]);
   });
 });
 

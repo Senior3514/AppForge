@@ -9,6 +9,16 @@ import { useMe } from "../lib/useMe";
 import { Icon } from "./art";
 import { PromptBox } from "./PromptBox";
 
+function VerifyBanner({ locale }: { locale: Locale }) {
+  const [sent, setSent] = useState(false);
+  return (
+    <p role="status" className="mt-4 rounded-xl bg-amber-50 p-3 text-sm text-amber-900">
+      {t(locale, "verify.banner")}{" "}
+      {sent ? t(locale, "verify.resent") : <button className="font-semibold underline" onClick={async () => { await api("/auth/verify/resend", { method: "POST", body: {} }); setSent(true); }}>{t(locale, "verify.resend")}</button>}
+    </p>
+  );
+}
+
 export function Dashboard({ locale }: { locale: Locale }) {
   const { me } = useMe();
   const [apps, setApps] = useState<AppSummary[] | null>(null);
@@ -37,6 +47,10 @@ export function Dashboard({ locale }: { locale: Locale }) {
         <Link href={`/${locale}/pricing`} className="text-sm font-semibold underline">{t(locale, "dash.upgrade")}</Link>
         <button onClick={() => setCreating((v) => !v)} className="btn-primary ms-auto inline-flex items-center gap-1.5 px-5 py-2 text-sm"><Icon name="bolt" size={16} />{t(locale, "dash.new")}</button>
       </div>
+      {me?.user && !me.user.anonymous && me.user.verified === false && <VerifyBanner locale={locale} />}
+      {me?.user && !me.user.anonymous && me.aiSource === "mock" && (
+        <p className="mt-4 rounded-xl bg-indigo-50 p-3 text-sm text-indigo-900" data-testid="ai-banner">{t(locale, "dash.aiBanner")} <Link href={`/${locale}/settings`} className="font-semibold underline">{t(locale, "dash.aiBannerLink")}</Link></p>
+      )}
       {me?.user?.anonymous && (
         <p className="mt-4 rounded-xl bg-blue-50 p-3 text-sm text-blue-900">{t(locale, "auth.claim")}{" "}
           <Link className="font-semibold underline" href={`/${locale}/signup`}>{t(locale, "nav.signup")}</Link></p>

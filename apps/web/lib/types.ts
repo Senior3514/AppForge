@@ -8,10 +8,11 @@ export interface AppView {
 }
 export interface ServerInfo { llm: string; payments?: string; push?: string; builds?: string; billing?: string }
 export interface Me {
-  user: { email: string | null; anonymous: boolean } | null;
+  user: { email: string | null; anonymous: boolean; verified?: boolean; operator?: boolean } | null;
   tenant?: { plan: Plan; status: string; effectivePlan: Plan; trialEndsAt: string | null };
   entitlements?: { maxApps: number; storePublishing: boolean };
   usage?: { apps: number };
+  aiSource?: "user" | "platform" | "mock";
   server: ServerInfo;
 }
 export interface AppSummary { id: string; name: string; primary: string; locale: string; published: boolean; updatedAt: string }

@@ -60,6 +60,7 @@ export function AuthForm({ locale, mode }: { locale: Locale; mode: "login" | "si
           <input type="password" required minLength={8} autoComplete={mode === "login" ? "current-password" : "new-password"} value={password} onChange={(e) => setPassword(e.target.value)} className={`${input} mt-1`} />
           {mode === "signup" && <span className="mt-1 block text-xs font-normal text-slate-600">{t(locale, "auth.passwordHint")}</span>}
         </label>
+        {mode === "login" && <Link href={`/${locale}/forgot`} className="block text-sm underline">{t(locale, "auth.forgot")}</Link>}
         {error && <p role="alert" className="text-sm text-red-700">{error}</p>}
         {magicSent && <p role="status" className="text-sm text-green-800">{t(locale, "auth.magicSent")}</p>}
         <button disabled={busy} className="btn-primary w-full px-6 py-3">

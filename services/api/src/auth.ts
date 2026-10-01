@@ -7,7 +7,7 @@ export const SESSION_COOKIE = "af_session";
 const SESSION_DAYS = 30;
 const MAGIC_MINUTES = 15;
 
-export interface Session { userId: string; tenantId: string; email: string | null; anonymous: boolean }
+export interface Session { userId: string; tenantId: string; email: string | null; anonymous: boolean; verified: boolean }
 
 export const Credentials = z.object({ email: z.string().trim().toLowerCase().email().max(254), password: z.string().min(8).max(200) });
 
@@ -16,7 +16,7 @@ export async function createTenantAndUser(db: Db, opts: { email: string | null; 
     const name = opts.email ? opts.email.split("@")[0]! : "Guest workspace";
     const t = (await q("insert into tenants (name) values ($1) returning id", [name])).rows[0]!;
     const u = (await q("insert into users (tenant_id, email, password_hash, anonymous) values ($1,$2,$3,$4) returning id", [t.id, opts.email, opts.passwordHash, opts.anonymous])).rows[0]!;
-    return { userId: u.id, tenantId: t.id, email: opts.email, anonymous: opts.anonymous };
+    return { userId: u.id, tenantId: t.id, email: opts.email, anonymous: opts.anonymous, verified: false };
   });
 }
 
@@ -31,9 +31,9 @@ export async function sessionOf(db: Db, c: Ctx): Promise<Session | null> {
   const token = bearer ?? c.cookie(SESSION_COOKIE);
   if (!token) return null;
   const r = (await db.system(
-    "select u.id as user_id, u.tenant_id, u.email, u.anonymous from sessions s join users u on u.id=s.user_id where s.token_hash=$1 and s.expires_at > now()",
+    "select u.id as user_id, u.tenant_id, u.email, u.anonymous, (u.email_verified_at is not null) as verified from sessions s join users u on u.id=s.user_id where s.token_hash=$1 and s.expires_at > now() and not u.blocked",
     [hashToken(token)])).rows[0];
-  return r ? { userId: r.user_id, tenantId: r.tenant_id, email: r.email, anonymous: r.anonymous } : null;
+  return r ? { userId: r.user_id, tenantId: r.tenant_id, email: r.email, anonymous: r.anonymous, verified: r.verified } : null;
 }
 
 export async function requireSession(db: Db, c: Ctx): Promise<Session> {
@@ -43,7 +43,7 @@ export async function requireSession(db: Db, c: Ctx): Promise<Session> {
 }
 
 export async function findUserByEmail(db: Db, email: string): Promise<Row | undefined> {
-  return (await db.system("select id, tenant_id, password_hash from users where email=$1", [email])).rows[0];
+  return (await db.system("select id, tenant_id, password_hash, blocked from users where email=$1", [email])).rows[0];
 }
 
 /** Turns an anonymous "try first" account into a real one in place, so drafts survive signup. */
@@ -80,4 +80,22 @@ export async function createMagicLink(db: Db, email: string): Promise<string> {
 export async function consumeMagicLink(db: Db, token: string): Promise<string | null> {
   const r = (await db.system("delete from magic_links where token_hash=$1 and expires_at > now() returning email", [hashToken(token)])).rows[0];
   return r ? (r.email as string) : null;
+}
+
+const TOKEN_MINUTES = { verify: 60 * 24, reset: 60 } as const;
+
+/** One-time token for email verification or password reset. Issuing a new one replaces older ones of the same kind. */
+export async function createAuthToken(db: Db, userId: string, kind: "verify" | "reset"): Promise<string> {
+  const token = newToken();
+  await db.systemTx(async (q) => {
+    await q("delete from auth_tokens where user_id=$1 and kind=$2", [userId, kind]);
+    await q("insert into auth_tokens (token_hash, user_id, kind, expires_at) values ($1,$2,$3, now() + ($4 || ' minutes')::interval)", [hashToken(token), userId, kind, String(TOKEN_MINUTES[kind])]);
+  });
+  return token;
+}
+
+/** Single use: deleted as it is read. */
+export async function consumeAuthToken(db: Db, token: string, kind: "verify" | "reset"): Promise<string | null> {
+  const r = (await db.system("delete from auth_tokens where token_hash=$1 and kind=$2 and expires_at > now() returning user_id", [hashToken(token), kind])).rows[0];
+  return r ? (r.user_id as string) : null;
 }
