@@ -1,0 +1,9 @@
+node_modules
+**/node_modules
+.next
+**/.next
+.data
+dist
+dist-ios
+.git
+test-results

@@ -1,0 +1,31 @@
+name: CI
+on: [push, pull_request]
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env: { POSTGRES_USER: appowner, POSTGRES_PASSWORD: x, POSTGRES_DB: appforge_test }
+        ports: ["5432:5432"]
+        options: --health-cmd "pg_isready -U appowner" --health-interval 5s --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: pnpm }
+      - run: sudo apt-get update && sudo apt-get install -y fonts-dejavu-core
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm typecheck
+      - run: pnpm test
+      # The same API suite again on a real Postgres through the `pg` driver (RLS, transactions, advisory-locked migrations).
+      - run: pnpm --filter @appforge/api test
+        env: { TEST_DATABASE_URL: "postgres://appowner:x@localhost:5432/appforge_test" }
+      - run: pnpm --filter @appforge/web build
+      - run: pnpm --filter @appforge/web exec playwright install --with-deps chromium
+      - run: pnpm --filter @appforge/web e2e
+        env: { CI: "1" }
+      - run: pnpm --filter @appforge/runtime exec expo export --platform android --output-dir dist
+        env: { CI: "1", EXPO_NO_TELEMETRY: "1" }
+      - run: pnpm --filter @appforge/runtime exec expo export --platform ios --output-dir dist-ios
+        env: { CI: "1", EXPO_NO_TELEMETRY: "1" }

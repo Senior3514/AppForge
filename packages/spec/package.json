@@ -1,0 +1,10 @@
+{
+  "name": "@appforge/spec",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "scripts": { "typecheck": "tsc -p .", "test": "vitest run --passWithNoTests" },
+  "dependencies": {"@appforge/i18n":"workspace:*","fast-json-patch":"^3.1.1","zod":"^3.23.8","zod-to-json-schema":"^3.23.5"}
+}
