@@ -15,7 +15,7 @@ export function MockPay({ locale, refId }: { locale: Locale; refId: string }) {
   return (
     <main className="mx-auto max-w-md px-4 py-16 text-center">
       <h1 className="text-2xl font-bold">{t(locale, "pay.mockTitle")}</h1>
-      <p className="mt-2 text-neutral-700">{t(locale, "pay.mockBody")}</p>
+      <p className="mt-2 text-slate-700">{t(locale, "pay.mockBody")}</p>
       <button onClick={pay} className="mt-6 rounded-full bg-[var(--brand)] px-6 py-3 font-semibold text-white">{t(locale, "pay.mockBtn")}</button>
       {error && <p role="alert" className="mt-4 text-sm text-red-700">{error}</p>}
     </main>

@@ -1,6 +1,6 @@
 # AppForge — Architecture
 
-AppForge turns a plain-language description (text or voice, 8 languages) into a working native app preview, then lets the user keep iterating in chat and finally publish to the stores. "AppForge" is a placeholder name.
+AppForge turns a plain-language description (text or voice, 20 languages, English by default) into a working native app preview, then lets the user keep iterating in chat and finally publish to the stores. "AppForge" is a placeholder name.
 
 ## Core decision: server-driven UI, not per-app code generation
 

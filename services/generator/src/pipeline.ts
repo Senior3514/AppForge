@@ -34,11 +34,19 @@ export function sanitizePrompt(raw: string): string {
   return clean;
 }
 
-/** Cheap script-based detection so Hebrew/Arabic/Cyrillic prompts default to a matching locale. */
+/**
+ * Cheap script-based detection so a prompt defaults to a matching locale. Scripts shared by several languages are
+ * disambiguated by letters unique to one of them (Persian vs Arabic, Ukrainian vs Russian, kana makes Japanese vs Chinese).
+ * Latin-script languages cannot be told apart this way, so they fall back to English unless the caller passes a locale.
+ */
 export function detectLocale(text: string): Locale {
-  if (/[֐-׿]/.test(text)) return "he";
-  if (/[؀-ۿ]/.test(text)) return "ar";
-  if (/[Ѐ-ӿ]/.test(text)) return "ru";
+  if (/[\u0590-\u05FF]/.test(text)) return "he";
+  if (/[\u0600-\u06FF]/.test(text)) return /[پچژگکی]/.test(text) ? "fa" : "ar";
+  if (/[\u0400-\u04FF]/.test(text)) return /[іїєґІЇЄҐ]/.test(text) ? "uk" : "ru";
+  if (/[\u3040-\u30FF]/.test(text)) return "ja";
+  if (/[\uAC00-\uD7AF\u1100-\u11FF]/.test(text)) return "ko";
+  if (/[\u4E00-\u9FFF]/.test(text)) return "zh";
+  if (/[\u0900-\u097F]/.test(text)) return "hi";
   return "en";
 }
 

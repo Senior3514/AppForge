@@ -18,6 +18,12 @@ describe("generateApp (mock)", () => {
     expect(spec.screens.map((s) => s.id)).toContain(screen);
   });
 
+  it("detects the language from the script, telling apart languages that share one", () => {
+    const cases: [string, string][] = [["אפליקציה", "he"], ["تطبيق للمطعم", "ar"], ["برنامه‌ای برای رستوران چای", "fa"], ["приложение для кафе", "ru"], ["застосунок для кав'ярні, їжа", "uk"],
+      ["レストランのアプリ", "ja"], ["식당 앱", "ko"], ["餐厅应用", "zh"], ["रेस्टोरेंट ऐप", "hi"], ["a cafe app", "en"], ["una app para mi café", "en"]];
+    for (const [text, loc] of cases) expect(detectLocale(text), text).toBe(loc);
+  });
+
   it("detects Hebrew and produces an RTL-locale app with Hebrew copy", async () => {
     expect(detectLocale("אפליקציה למסעדה")).toBe("he");
     const { spec } = await generateApp("אפליקציה למסעדה שלי", { llm });

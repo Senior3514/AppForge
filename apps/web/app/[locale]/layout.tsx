@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import { LOCALES, dirOf, isLocale, t } from "@appforge/i18n";
+import { Footer } from "../../components/Footer";
 import { SiteHeader } from "../../components/SiteHeader";
 import "../globals.css";
 
@@ -24,12 +25,10 @@ export default async function RootLayout({ children, params }: { children: React
   const l = isLocale(locale) ? locale : "en";
   return (
     <html lang={l} dir={dirOf(l)}>
-      <body className="bg-white text-neutral-900 antialiased">
+      <body className="antialiased">
         <SiteHeader locale={l} />
         {children}
-        <footer className="mt-12 border-t border-neutral-200 py-8 text-center text-sm text-neutral-600">
-          <p>AppForge · {t(l, "footer.tagline")}</p>
-        </footer>
+        <Footer locale={l} />
       </body>
     </html>
   );

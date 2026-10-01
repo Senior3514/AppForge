@@ -17,9 +17,10 @@ export function PhonePreview({ spec, opts }: { spec: AppSpec; opts: PreviewOptio
   const radius = spec.theme.radius;
 
   return (
-    <div className={`mx-auto w-[300px] overflow-hidden border-[10px] border-neutral-900 shadow-xl ${opts.platform === "ios" ? "rounded-[44px]" : "rounded-[26px]"}`} data-testid="phone">
-      <div dir={dir} lang={opts.locale} style={{ background: p.background, color: p.text, fontFamily: fontFamily[scriptOf(opts.locale)] }} className="flex h-[560px] flex-col">
-        <header style={{ background: p.primary, color: p.onPrimary }} className="px-4 pb-3 pt-6 text-lg font-semibold">{T(spec.name)}</header>
+    <div className={`relative mx-auto w-[300px] bg-gradient-to-b from-slate-600 to-slate-900 p-[10px] shadow-[0_30px_60px_-20px_rgba(15,23,42,.55)] ring-1 ring-black/30 ${opts.platform === "ios" ? "rounded-[46px]" : "rounded-[28px]"}`} data-testid="phone">
+      <span aria-hidden className={`absolute left-1/2 top-[18px] z-10 -translate-x-1/2 bg-black ${opts.platform === "ios" ? "h-[22px] w-[88px] rounded-full" : "h-3 w-3 rounded-full"}`} />
+      <div dir={dir} lang={opts.locale} style={{ background: p.background, color: p.text, fontFamily: fontFamily[scriptOf(opts.locale)] }} className={`flex h-[560px] flex-col overflow-hidden ${opts.platform === "ios" ? "rounded-[36px]" : "rounded-[20px]"}`}>
+        <header style={{ background: p.primary, color: p.onPrimary }} className="px-4 pb-3 pt-2 text-lg font-semibold"><div aria-hidden style={{ direction: "ltr" }} className="flex justify-between px-1 pb-3 pt-1 text-[10px] font-semibold opacity-90"><span>9:41</span><span>●●● ▮</span></div>{T(spec.name)}</header>
         <div className="flex-1 space-y-3 overflow-y-auto p-3" role="tabpanel">
           {active.blocks.map((b) => (
             <div key={b.id}><BlockView b={b} spec={spec} T={T} p={p} radius={radius} /></div>

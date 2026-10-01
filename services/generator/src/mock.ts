@@ -33,6 +33,8 @@ function build(a: Archetype, locale: Locale): AppSpec {
   const rows = a.model.rows[locale === "he" ? "he" : "en"].map((r) => { const [n, s] = r.split("|"); return { [a.model.field]: n!, ...(sub ? { [sub]: s! } : {}) }; });
   const dataModels: AppSpec["dataModels"] = [{ id: a.model.id, fields: [{ name: a.model.field, type: "text" }, ...(sub ? [{ name: sub, type: "text" as const }] : [])], seed: rows }];
   const home: Block[] = [{ id: "hero", module: "hero", props: { headline: pick(a.name, locale), subtitle: pick(a.tagline, locale), cta: pick(L("Get started", "התחילו"), locale) } }];
+  // A banner alone leaves the home tab mostly empty; preview the app's own content under it.
+  home.push({ id: "home-list", module: "list", props: { collection: a.model.id, titleField: a.model.field, subtitleField: sub ?? null } });
   const screens: AppSpec["screens"] = [
     { id: "home", title: pick(L("Home", "בית"), locale), icon: "home", blocks: home },
     { id: a.model.id, title: pick(a.listTitle, locale), icon: "list", blocks: [{ id: "main-list", module: "list", props: { collection: a.model.id, titleField: a.model.field, subtitleField: sub ?? null } }] },

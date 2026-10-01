@@ -8,8 +8,8 @@ import {
 } from "../lib/ops";
 
 export type Edit = (ops: Op[], label: string) => Promise<void>;
-const input = "mt-1 w-full rounded-lg border border-neutral-300 px-2.5 py-1.5 text-sm";
-const iconBtn = "rounded border border-neutral-300 px-2 py-0.5 text-xs disabled:opacity-30";
+const input = "mt-1 w-full rounded-lg border border-slate-300 px-2.5 py-1.5 text-sm";
+const iconBtn = "rounded border border-slate-300 px-2 py-0.5 text-xs disabled:opacity-30";
 
 /** Commits on blur/Enter so one edit is one revision, not one per keystroke. `key` resets the field after undo/redo. */
 function Field({ label, value, onCommit, maxLength }: { label: string; value: string; onCommit: (v: string) => void; maxLength?: number }) {
@@ -33,7 +33,7 @@ function useIdleCommit<T>(value: T, commit: (v: T) => void, ms = 500) {
 
 function Section({ title, children, open = false }: { title: string; children: ReactNode; open?: boolean }) {
   return (
-    <details open={open} className="rounded-xl border border-neutral-200 p-3">
+    <details open={open} className="rounded-xl border border-slate-200 p-3">
       <summary className="cursor-pointer text-sm font-semibold">{title}</summary>
       <div className="mt-3 space-y-3">{children}</div>
     </details>
@@ -64,7 +64,7 @@ export function Inspector({ spec, locale, edit, translateWithAi, llm, busy }: {
         <Field label={t(locale, "insp.tagline")} value={spec.tagline} maxLength={120} onCommit={(v) => void edit([replaceOp("/tagline", v)], t(locale, "insp.tagline"))} />
         <div className="flex items-end gap-3">
           <label className="text-xs font-medium">{t(locale, "insp.color")}
-            <input type="color" value={color} onChange={(e) => setColor(e.target.value)} className="mt-1 block h-9 w-14 cursor-pointer rounded border border-neutral-300" />
+            <input type="color" value={color} onChange={(e) => setColor(e.target.value)} className="mt-1 block h-9 w-14 cursor-pointer rounded border border-slate-300" />
           </label>
           <label className="flex-1 text-xs font-medium">{t(locale, "insp.radius")} ({radius})
             <input type="range" min={0} max={32} value={radius} onChange={(e) => setRadius(Number(e.target.value))} className="mt-2 block w-full" />
@@ -80,14 +80,14 @@ export function Inspector({ spec, locale, edit, translateWithAi, llm, busy }: {
       </Section>
 
       <Section title={t(locale, "insp.tabs")} open>
-        <p className="text-xs text-neutral-600">{t(locale, "insp.tabHint")}</p>
+        <p className="text-xs text-slate-600">{t(locale, "insp.tabHint")}</p>
         <ul className="space-y-1.5">
           {spec.navigation.map((id, i) => {
             const s = spec.screens.find((x) => x.id === id)!;
             return (
               <li key={id} draggable onDragStart={() => setDragFrom(i)} onDragOver={(e) => e.preventDefault()}
                 onDrop={() => { if (dragFrom !== null) void edit(navigationOps(spec.navigation, dragFrom, i), t(locale, "insp.tabs")); setDragFrom(null); }}
-                className="flex cursor-grab items-center gap-2 rounded-lg border border-neutral-200 bg-white px-2 py-1.5 text-sm">
+                className="flex cursor-grab items-center gap-2 rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-sm">
                 <span aria-hidden>⠿</span><span className="flex-1 truncate">{s.title}</span>
                 <button className={iconBtn} aria-label={t(locale, "insp.moveUp")} disabled={i === 0} onClick={() => void edit(navigationOps(spec.navigation, i, i - 1), t(locale, "insp.tabs"))}>▲</button>
                 <button className={iconBtn} aria-label={t(locale, "insp.moveDown")} disabled={i === spec.navigation.length - 1} onClick={() => void edit(navigationOps(spec.navigation, i, i + 1), t(locale, "insp.tabs"))}>▼</button>
@@ -113,7 +113,7 @@ export function Inspector({ spec, locale, edit, translateWithAi, llm, busy }: {
         {screen.blocks.map((b, bi) => {
           const fields = blockFields(b);
           return (
-            <fieldset key={b.id} className="rounded-lg border border-neutral-200 p-2.5">
+            <fieldset key={b.id} className="rounded-lg border border-slate-200 p-2.5">
               <legend className="px-1 text-xs font-semibold">{t(locale, `mod.${b.module}.t` as never)}</legend>
               <div className="mb-2 flex gap-1.5">
                 <button className={iconBtn} aria-label={t(locale, "insp.moveUp")} disabled={bi === 0} onClick={() => void edit(moveBlockOps(spec, screenIdx, bi, bi - 1), b.module)}>▲</button>
@@ -137,7 +137,7 @@ export function Inspector({ spec, locale, edit, translateWithAi, llm, busy }: {
           <select aria-label={t(locale, "insp.addModule")} value={addId} onChange={(e) => setAddId(e.target.value)} className={`${input} mt-0`}>
             {MODULES.map((m) => <option key={m.id} value={m.id}>{t(locale, `mod.${m.id}.t` as never)}</option>)}
           </select>
-          <button className="shrink-0 rounded-lg bg-neutral-900 px-3 py-1.5 text-sm text-white" onClick={() => void edit(addModuleOps(spec, screen.id, addId) as Op[], addId)}>＋ {t(locale, "insp.addModule")}</button>
+          <button className="shrink-0 rounded-lg bg-slate-900 px-3 py-1.5 text-sm text-white" onClick={() => void edit(addModuleOps(spec, screen.id, addId) as Op[], addId)}>＋ {t(locale, "insp.addModule")}</button>
         </div>
         <button className="text-xs text-red-700 underline" onClick={() => { const ops = removeScreenOps(spec, screen.id); if (ops) { setScreenId(spec.screens.find((s) => s.id !== screen.id)!.id); void edit(ops as Op[], t(locale, "insp.removeScreen")); } }}
           disabled={spec.screens.length <= 1}>{t(locale, "insp.removeScreen")}</button>
@@ -169,12 +169,12 @@ export function Inspector({ spec, locale, edit, translateWithAi, llm, busy }: {
             {LOCALES.filter((l) => l !== spec.locale).map((l) => <option key={l} value={l}>{LOCALE_NAMES[l]}</option>)}
           </select>
         </label>
-        <button disabled={busy || llm === "mock"} onClick={() => translateWithAi(trLocale)} className="rounded-lg border border-neutral-300 px-3 py-1.5 text-sm disabled:opacity-50">{t(locale, "insp.translateAi")}</button>
-        {llm === "mock" && <p className="text-xs text-neutral-600">{t(locale, "insp.translateNote")}</p>}
+        <button disabled={busy || llm === "mock"} onClick={() => translateWithAi(trLocale)} className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm disabled:opacity-50">{t(locale, "insp.translateAi")}</button>
+        {llm === "mock" && <p className="text-xs text-slate-600">{t(locale, "insp.translateNote")}</p>}
         <div className="space-y-2" dir={trLocale === "he" || trLocale === "ar" ? "rtl" : "ltr"}>
           {sources.map((s) => (
-            <label key={s} className="block text-xs text-neutral-600" dir="auto">{s}
-              <input key={`${trLocale}-${tr[s] ?? ""}`} defaultValue={tr[s] ?? ""} className={`${input} text-neutral-900`} lang={trLocale}
+            <label key={s} className="block text-xs text-slate-600" dir="auto">{s}
+              <input key={`${trLocale}-${tr[s] ?? ""}`} defaultValue={tr[s] ?? ""} className={`${input} text-slate-900`} lang={trLocale}
                 onBlur={(e) => { if (e.target.value !== (tr[s] ?? "")) void edit(translationOps(spec, trLocale, s, e.target.value), `${LOCALE_NAMES[trLocale]}`); }} />
             </label>
           ))}

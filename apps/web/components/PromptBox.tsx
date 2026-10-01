@@ -59,24 +59,24 @@ export function PromptBox({ locale, autofocus = false }: { locale: Locale; autof
 
   return (
     <form onSubmit={(e) => { e.preventDefault(); void go(text); }} className="space-y-4">
-      <div className="flex items-start gap-2 rounded-3xl border border-neutral-300 p-3 shadow-sm focus-within:ring-2 focus-within:ring-[var(--brand)]">
+      <div className="flex items-start gap-2 rounded-3xl border border-slate-300 bg-white p-3 shadow-sm focus-within:border-indigo-400 focus-within:ring-4 focus-within:ring-indigo-100">
         <textarea
           autoFocus={autofocus} value={text} onChange={(e) => setText(e.target.value)} rows={3} maxLength={4000}
           placeholder={t(locale, "hero.placeholder")} aria-label={t(locale, "hero.placeholder")}
           className="w-full resize-none bg-transparent p-2 text-lg outline-none"
         />
         <button type="button" onClick={toggleMic} aria-pressed={listening} aria-label={t(locale, "hero.mic")}
-          className={`rounded-full p-3 ${listening ? "bg-red-600 text-white" : "bg-neutral-100"}`}>🎙</button>
+          className={`rounded-full p-3 ${listening ? "bg-red-600 text-white" : "bg-slate-100"}`}>🎙</button>
       </div>
       {micError && <p role="alert" className="text-sm text-red-700">{t(locale, "hero.micUnavailable")}</p>}
       <div className="flex flex-wrap gap-2">
         {EXAMPLE_KEYS.map((k) => (
-          <button key={k} type="button" disabled={busy} onClick={() => void go(EXAMPLES[locale][k])} className="rounded-full border border-neutral-300 px-3 py-1.5 text-sm hover:bg-neutral-50 disabled:opacity-50">
+          <button key={k} type="button" disabled={busy} onClick={() => void go(EXAMPLES[locale][k])} className="rounded-full border border-slate-200 bg-white px-3.5 py-1.5 text-sm text-slate-700 shadow-sm transition hover:border-indigo-300 hover:bg-indigo-50 disabled:opacity-50">
             {EXAMPLES[locale][k]}
           </button>
         ))}
       </div>
-      <button type="submit" disabled={!text.trim() || busy} className="rounded-full bg-[var(--brand)] px-6 py-3 font-semibold text-white disabled:opacity-40">
+      <button type="submit" disabled={!text.trim() || busy} className="btn-primary px-7 py-3">
         {busy ? `${step}…` : t(locale, "hero.cta")}
       </button>
       {error && (

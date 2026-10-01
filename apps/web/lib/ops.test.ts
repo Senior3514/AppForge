@@ -74,7 +74,9 @@ describe("blocks and data rows", () => {
     let s = await gen("salon booking app");
     s = apply(s, addModuleOps(s, "home", "text").map((o) => o as ops.Op));
     const ids = s.screens[0]!.blocks.map((b) => b.id);
-    expect(apply(s, ops.moveBlockOps(s, 0, 0, 1)).screens[0]!.blocks.map((b) => b.id)).toEqual([...ids].reverse());
+    expect(ids.length).toBeGreaterThanOrEqual(3); // banner + content preview + the added text block
+    const last = ids.length - 1;
+    expect(apply(s, ops.moveBlockOps(s, 0, 0, last)).screens[0]!.blocks.map((b) => b.id)).toEqual(ops.reorder(ids, 0, last));
     expect(apply(s, ops.removeBlockOps(0, 0)).screens[0]!.blocks).toHaveLength(ids.length - 1);
   });
   it("edits, adds and removes seed rows on content models only", async () => {

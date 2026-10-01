@@ -4,6 +4,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { LOCALES, LOCALE_NAMES, t, type Locale } from "@appforge/i18n";
 import { api } from "../lib/api";
 import { useEffect } from "react";
+import { Logo } from "./art";
 import { useMe } from "../lib/useMe";
 
 export function SiteHeader({ locale }: { locale: Locale }) {
@@ -21,22 +22,22 @@ export function SiteHeader({ locale }: { locale: Locale }) {
   }
 
   return (
-    <header className="border-b border-neutral-200">
+    <header className="glass sticky top-0 z-30 border-b border-slate-200/70">
       <nav aria-label="Main" className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-5 gap-y-2 px-4 py-3 text-sm">
-        <Link href={`/${locale}`} className="text-lg font-bold tracking-tight">AppForge</Link>
-        <Link href={`/${locale}/pricing`} className="text-neutral-700 hover:underline">{t(locale, "nav.pricing")}</Link>
-        {me?.user && <Link href={`/${locale}/dashboard`} className="text-neutral-700 hover:underline">{t(locale, "nav.dashboard")}</Link>}
+        <Link href={`/${locale}`} className="flex items-center gap-2 text-lg font-bold tracking-tight"><Logo />AppForge</Link>
+        <Link href={`/${locale}/pricing`} className="text-slate-700 hover:underline">{t(locale, "nav.pricing")}</Link>
+        {me?.user && <Link href={`/${locale}/dashboard`} className="text-slate-700 hover:underline">{t(locale, "nav.dashboard")}</Link>}
         <span className="ms-auto" />
         <label className="sr-only" htmlFor="lang">Language</label>
-        <select id="lang" value={locale} onChange={(e) => router.push(pathname.replace(/^\/[a-z]{2}(?=\/|$)/, `/${e.target.value}`))} className="rounded border border-neutral-300 px-2 py-1">
+        <select id="lang" value={locale} onChange={(e) => router.push(pathname.replace(/^\/[a-z]{2}(?=\/|$)/, `/${e.target.value}`))} className="rounded border border-slate-300 px-2 py-1">
           {LOCALES.map((l) => <option key={l} value={l}>{LOCALE_NAMES[l]}</option>)}
         </select>
         {signedIn ? (
-          <button onClick={logout} className="text-neutral-700 hover:underline">{t(locale, "nav.logout")}</button>
+          <button onClick={logout} className="text-slate-700 hover:underline">{t(locale, "nav.logout")}</button>
         ) : me ? (
           <>
-            <Link href={`/${locale}/login`} className="text-neutral-700 hover:underline">{t(locale, "nav.login")}</Link>
-            <Link href={`/${locale}/signup`} className="rounded-full bg-[var(--brand)] px-4 py-1.5 font-semibold text-white">{t(locale, "nav.signup")}</Link>
+            <Link href={`/${locale}/login`} className="text-slate-700 hover:underline">{t(locale, "nav.login")}</Link>
+            <Link href={`/${locale}/signup`} className="btn-primary px-4 py-1.5">{t(locale, "nav.signup")}</Link>
           </>
         ) : null}
       </nav>

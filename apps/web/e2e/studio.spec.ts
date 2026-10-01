@@ -179,7 +179,7 @@ test("push campaign is recorded; demo-mode is stated honestly", async ({ page })
   await expect(page.getByText("Fresh bread at 8")).toBeVisible();
 });
 
-test("Hebrew: prompt chip → RTL app; landing is RTL with all 8 languages", async ({ page }) => {
+test("Hebrew: prompt chip → RTL app; landing is RTL; Persian is RTL too", async ({ page }) => {
   await generate(page, "מסעדה", "he");
   await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
   await expect(phone(page).locator("[dir]")).toHaveAttribute("dir", "rtl");
@@ -192,7 +192,7 @@ test("Hebrew: prompt chip → RTL app; landing is RTL with all 8 languages", asy
 test("landing: sections, gallery, pricing and FAQ render; language switch keeps the page", async ({ page }) => {
   await page.goto("/en");
   for (const h of ["How it works", "Made with AppForge", "Everything your app needs", "Simple pricing", "Questions"]) await expect(page.getByRole("heading", { name: h })).toBeVisible();
-  expect(await page.getByTestId("phone").count()).toBe(3);
+  expect(await page.getByTestId("phone").count()).toBe(6); // 3 floating in the hero + 3 in the gallery
   await page.goto("/en/pricing");
   await page.getByLabel("Language").selectOption("de");
   await expect(page).toHaveURL(/\/de\/pricing/);
@@ -213,4 +213,17 @@ test("pricing: plan buttons wait for the session instead of misrouting an early 
   const trial = page.getByRole("button", { name: "Start free trial" }).first();
   await expect(trial).toBeDisabled();
   await expect(trial).toBeEnabled({ timeout: 10_000 });
+});
+
+test("English is the default; 20 languages are offered; Persian is right-to-left, Japanese is not", async ({ page }) => {
+  await page.goto("/");
+  await expect(page).toHaveURL(/\/en$/);
+  await expect(page.locator("html")).toHaveAttribute("lang", "en");
+  await expect(page.getByLabel("Language").locator("option")).toHaveCount(20);
+  await page.goto("/fa");
+  await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
+  await expect(page.getByRole("button", { name: "رستوران" })).toBeVisible();
+  await page.goto("/ja");
+  await expect(page.locator("html")).toHaveAttribute("dir", "ltr");
+  await expect(page.getByRole("button", { name: "サロン予約" })).toBeVisible();
 });
