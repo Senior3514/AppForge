@@ -5,7 +5,6 @@ import { CtaBand } from "../../components/CtaBand";
 import { Faq } from "../../components/Faq";
 import { Gallery } from "../../components/Gallery";
 import { Hero } from "../../components/Hero";
-import { LanguageChips } from "../../components/LanguageChips";
 import { Pricing } from "../../components/Pricing";
 import { IconTile, StepArt } from "../../components/art";
 
@@ -47,7 +46,6 @@ export default async function Landing({ params }: { params: Promise<{ locale: st
           </ul>
         </section>
 
-        <LanguageChips locale={locale} />
         <Pricing locale={locale} />
         <Faq locale={locale} />
         <CtaBand locale={locale} />

@@ -50,17 +50,9 @@ export function nameSuggestions(spec: AppSpec): string[] {
 }
 
 const PAIRS = { modern: ["Inter", "Inter"], classic: ["Lora", "Inter"], rounded: ["Nunito", "Nunito"] } as const;
-const SCRIPT_FONTS: Record<string, { heading: string; body: string; note: string }> = {
-  hebrew: { heading: "Heebo", body: "Heebo", note: "Heebo covers Hebrew and Latin with matching weights." },
-  arabic: { heading: "Noto Sans Arabic", body: "Noto Sans Arabic", note: "Noto Sans Arabic covers Arabic and Persian, plus Latin." },
-  japanese: { heading: "Noto Sans JP", body: "Noto Sans JP", note: "Noto Sans JP covers Japanese and Latin." },
-  korean: { heading: "Noto Sans KR", body: "Noto Sans KR", note: "Noto Sans KR covers Korean and Latin." },
-  chinese: { heading: "Noto Sans SC", body: "Noto Sans SC", note: "Noto Sans SC covers Simplified Chinese and Latin." },
-  devanagari: { heading: "Noto Sans Devanagari", body: "Noto Sans Devanagari", note: "Noto Sans Devanagari covers Hindi and Latin." },
-};
+const HEBREW_FONTS = { heading: "Heebo", body: "Heebo", note: "Heebo covers Hebrew and Latin with matching weights." };
 export function typography(spec: AppSpec) {
-  const fixed = SCRIPT_FONTS[scriptOf(spec.locale)];
-  if (fixed) return fixed;
+  if (scriptOf(spec.locale) === "hebrew") return HEBREW_FONTS;
   const [heading, body] = PAIRS[spec.theme.font];
   return { heading, body, note: "Open-licensed Google Fonts (SIL OFL)." };
 }

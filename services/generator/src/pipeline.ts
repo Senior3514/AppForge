@@ -34,20 +34,9 @@ export function sanitizePrompt(raw: string): string {
   return clean;
 }
 
-/**
- * Cheap script-based detection so a prompt defaults to a matching locale. Scripts shared by several languages are
- * disambiguated by letters unique to one of them (Persian vs Arabic, Ukrainian vs Russian, kana makes Japanese vs Chinese).
- * Latin-script languages cannot be told apart this way, so they fall back to English unless the caller passes a locale.
- */
+/** Hebrew script → Hebrew; anything else → English. The caller can always pass a locale explicitly. */
 export function detectLocale(text: string): Locale {
-  if (/[\u0590-\u05FF]/.test(text)) return "he";
-  if (/[\u0600-\u06FF]/.test(text)) return /[پچژگکی]/.test(text) ? "fa" : "ar";
-  if (/[\u0400-\u04FF]/.test(text)) return /[іїєґІЇЄҐ]/.test(text) ? "uk" : "ru";
-  if (/[\u3040-\u30FF]/.test(text)) return "ja";
-  if (/[\uAC00-\uD7AF\u1100-\u11FF]/.test(text)) return "ko";
-  if (/[\u4E00-\u9FFF]/.test(text)) return "zh";
-  if (/[\u0900-\u097F]/.test(text)) return "hi";
-  return "en";
+  return /[\u0590-\u05FF]/.test(text) ? "he" : "en";
 }
 
 const PatchSchema = z.object({ ops: z.array(z.object({ op: z.enum(["add", "remove", "replace"]), path: z.string(), value: z.unknown().optional() })).max(40) });

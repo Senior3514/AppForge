@@ -13,7 +13,7 @@
 
 html { scroll-behavior: smooth; }
 body {
-  font-family: Inter, "Heebo", "Noto Sans Arabic", "Noto Sans JP", "Noto Sans KR", "Noto Sans SC", "Noto Sans Devanagari", system-ui, sans-serif;
+  font-family: Inter, "Heebo", system-ui, sans-serif;
   color: var(--ink);
   background: var(--surface);
 }

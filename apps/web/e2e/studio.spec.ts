@@ -60,11 +60,11 @@ test("inspector: rename, tab reorder, add module, edit data row, translation; hi
   await expect(phone(page).getByText("Flat white")).toBeVisible();
 
   await inspector.getByText("Translations", { exact: true }).click();
-  await inspector.getByLabel("Translate into").selectOption("fr");
-  await inspector.getByText("Bean Bar").first().locator("input").fill("Le Bar à Fèves");
+  await inspector.getByLabel("Translate into").selectOption("he");
+  await inspector.getByText("Bean Bar").first().locator("input").fill("בר השעועית");
   await inspector.getByText("Bean Bar").first().locator("input").press("Tab");
-  await page.getByLabel("Preview language").selectOption("fr");
-  await expect(phone(page).getByText("Le Bar à Fèves").first()).toBeVisible();
+  await page.getByLabel("Preview language").selectOption("he");
+  await expect(phone(page).getByText("בר השעועית").first()).toBeVisible();
 
   await page.getByRole("tab", { name: "History" }).click();
   const hist = page.getByRole("list", { name: "History" });
@@ -179,14 +179,14 @@ test("push campaign is recorded; demo-mode is stated honestly", async ({ page })
   await expect(page.getByText("Fresh bread at 8")).toBeVisible();
 });
 
-test("Hebrew: prompt chip → RTL app; landing is RTL; Persian is RTL too", async ({ page }) => {
+test("Hebrew: prompt chip → RTL app; landing is RTL", async ({ page }) => {
   await generate(page, "מסעדה", "he");
   await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
   await expect(phone(page).locator("[dir]")).toHaveAttribute("dir", "rtl");
   await expect(phone(page).getByRole("tab", { name: "תפריט" })).toBeVisible();
-  await page.goto("/ar");
+  await page.goto("/he");
   await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
-  await expect(page.getByRole("button", { name: "مطعم" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "הזמנת תורים למספרה" })).toBeVisible();
 });
 
 test("landing: sections, gallery, pricing and FAQ render; language switch keeps the page", async ({ page }) => {
@@ -194,16 +194,16 @@ test("landing: sections, gallery, pricing and FAQ render; language switch keeps 
   for (const h of ["How it works", "Made with AppForge", "Everything your app needs", "Simple pricing", "Questions"]) await expect(page.getByRole("heading", { name: h })).toBeVisible();
   expect(await page.getByTestId("phone").count()).toBe(6); // 3 floating in the hero + 3 in the gallery
   await page.goto("/en/pricing");
-  await page.getByLabel("Language").selectOption("de");
-  await expect(page).toHaveURL(/\/de\/pricing/);
-  await expect(page.getByRole("heading", { name: "Einfache Preise" })).toBeVisible();
+  await page.getByLabel("Language").selectOption("he");
+  await expect(page).toHaveURL(/\/he\/pricing/);
+  await expect(page.getByRole("heading", { name: "תמחור פשוט" })).toBeVisible();
 });
 
 test("SEO basics: sitemap, robots, hreflang alternates", async ({ request, page }) => {
   expect(await (await request.get("/sitemap.xml")).text()).toContain("/he/pricing");
   expect(await (await request.get("/robots.txt")).text()).toContain("Disallow: /api/");
   await page.goto("/he");
-  await expect(page.locator('link[rel="alternate"][hreflang="ar"]')).toHaveCount(1);
+  await expect(page.locator('link[rel="alternate"][hreflang="he"]')).toHaveCount(1);
 });
 
 test("pricing: plan buttons wait for the session instead of misrouting an early click to signup", async ({ page }) => {
@@ -215,15 +215,13 @@ test("pricing: plan buttons wait for the session instead of misrouting an early 
   await expect(trial).toBeEnabled({ timeout: 10_000 });
 });
 
-test("English is the default; 20 languages are offered; Persian is right-to-left, Japanese is not", async ({ page }) => {
+test("English is the default and there are exactly two languages: English (LTR) and Hebrew (RTL)", async ({ page }) => {
   await page.goto("/");
   await expect(page).toHaveURL(/\/en$/);
   await expect(page.locator("html")).toHaveAttribute("lang", "en");
-  await expect(page.getByLabel("Language").locator("option")).toHaveCount(20);
-  await page.goto("/fa");
-  await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
-  await expect(page.getByRole("button", { name: "رستوران" })).toBeVisible();
-  await page.goto("/ja");
   await expect(page.locator("html")).toHaveAttribute("dir", "ltr");
-  await expect(page.getByRole("button", { name: "サロン予約" })).toBeVisible();
+  await expect(page.getByLabel("Language").locator("option")).toHaveText(["English", "עברית"]);
+  await page.goto("/he");
+  await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
+  expect((await page.goto("/fr"))?.status()).toBe(404);
 });

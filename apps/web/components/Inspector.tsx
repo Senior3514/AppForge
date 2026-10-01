@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { LOCALES, LOCALE_NAMES, t, type Locale } from "@appforge/i18n";
+import { LOCALES, LOCALE_NAMES, dirOf, t, type Locale } from "@appforge/i18n";
 import { MODULES, addModuleOps, removeScreenOps, type AppSpec } from "@appforge/modules";
 import {
   MAX_TABS, addSeedRowOps, blockFields, blockPropOp, contentModels, moveBlockOps, navigationOps, removeBlockOps, removeSeedRowOps,
@@ -171,7 +171,7 @@ export function Inspector({ spec, locale, edit, translateWithAi, llm, busy }: {
         </label>
         <button disabled={busy || llm === "mock"} onClick={() => translateWithAi(trLocale)} className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm disabled:opacity-50">{t(locale, "insp.translateAi")}</button>
         {llm === "mock" && <p className="text-xs text-slate-600">{t(locale, "insp.translateNote")}</p>}
-        <div className="space-y-2" dir={trLocale === "he" || trLocale === "ar" ? "rtl" : "ltr"}>
+        <div className="space-y-2" dir={dirOf(trLocale)}>
           {sources.map((s) => (
             <label key={s} className="block text-xs text-slate-600" dir="auto">{s}
               <input key={`${trLocale}-${tr[s] ?? ""}`} defaultValue={tr[s] ?? ""} className={`${input} text-slate-900`} lang={trLocale}

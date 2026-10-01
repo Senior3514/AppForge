@@ -1,6 +1,6 @@
 # AppForge — Architecture
 
-AppForge turns a plain-language description (text or voice, 20 languages, English by default) into a working native app preview, then lets the user keep iterating in chat and finally publish to the stores. "AppForge" is a placeholder name.
+AppForge turns a plain-language description (text or voice, English and Hebrew, English by default) into a working native app preview, then lets the user keep iterating in chat and finally publish to the stores. "AppForge" is a placeholder name.
 
 ## Core decision: server-driven UI, not per-app code generation
 
@@ -19,7 +19,7 @@ apps/runtime        Expo + Expo Router: universal AppSpec renderer
 packages/spec       Zod schemas, JSON Schema export, version migrations, patch + revision engine
 packages/modules    Module library: schema + RN renderer + web preview + admin editor + handlers + tests
 packages/ui-tokens  Shared design tokens (brand) for web + runtime
-packages/i18n       en, he (RTL), ar (RTL), es, fr, de, pt, ru
+packages/i18n       en (default), he (RTL)
 services/generator  prompt → AppSpec pipeline (Claude, repair loop, safety, cost tracking, cache)
 services/api        Postgres + RLS tenant isolation, auth, storage, realtime, edge handlers
 ```

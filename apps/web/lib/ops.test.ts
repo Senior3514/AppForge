@@ -41,13 +41,13 @@ describe("reorder / navigation", () => {
 describe("translations", () => {
   it("adds a locale, edits, and clears a translation; preview lookup uses it", async () => {
     let s = await gen("salon booking app");
-    s = apply(s, ops.translationOps(s, "fr", s.name, "Studio Éclat"));
-    expect(tr(s, "fr", s.name)).toBe("Studio Éclat");
-    s = apply(s, ops.translationOps(s, "fr", s.tagline, "Réservez en quelques secondes"));
-    expect(Object.keys(s.translations.fr!)).toHaveLength(2);
-    s = apply(s, ops.translationOps(s, "fr", s.name, "  "));
-    expect(tr(s, "fr", s.name)).toBe(s.name);
-    expect(Object.keys(s.translations.fr!)).toHaveLength(1);
+    s = apply(s, ops.translationOps(s, "he", s.name, "סטודיו זוהר"));
+    expect(tr(s, "he", s.name)).toBe("סטודיו זוהר");
+    s = apply(s, ops.translationOps(s, "he", s.tagline, "קבעו תור תוך שניות"));
+    expect(Object.keys(s.translations.he!)).toHaveLength(2);
+    s = apply(s, ops.translationOps(s, "he", s.name, "  "));
+    expect(tr(s, "he", s.name)).toBe(s.name);
+    expect(Object.keys(s.translations.he!)).toHaveLength(1);
     valid(s);
   });
   it("sourceStrings covers names, titles, copy and displayed rows, deduplicated", async () => {
