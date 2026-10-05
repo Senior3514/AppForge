@@ -82,7 +82,6 @@ export function PromptBox({ locale, autofocus = false }: { locale: Locale; autof
       {error && (
         <p role="alert" className="text-sm text-red-700">
           {error.message}{" "}
-          {error.upgrade && <Link className="font-semibold underline" href={`/${locale}/pricing`}>{t(locale, "dash.upgrade")}</Link>}
         </p>
       )}
     </form>

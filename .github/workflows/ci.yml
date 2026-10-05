@@ -44,3 +44,26 @@ jobs:
           curl -fs http://localhost:3000/api/v1/me | grep -q '"user":null'
       - if: failure()
         run: docker logs af
+
+  # The desktop agent: bundles API + web, starts them the way the installer does, and checks they serve a signed-in-by-default app.
+  agent:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: pnpm }
+      - run: sudo apt-get update && sudo apt-get install -y fonts-dejavu-core
+      - run: pnpm install --frozen-lockfile
+      - run: node scripts/build-agent.mjs
+      - run: |
+          node desktop/cli.mjs "$RUNNER_TEMP/af-data" > agent.log 2>&1 &
+          for i in $(seq 1 90); do grep -q "AppForge is running" agent.log && break; sleep 1; done
+          cat agent.log
+          URL=$(grep -o "http://localhost:[0-9]*" agent.log | tail -1)
+          curl -fs "$URL/api/v1/me" | grep -q '"owner@appforge.local"'
+          curl -fs -X POST "$URL/api/v1/apps" -H 'content-type: application/json' -d '{"prompt":"coffee shop"}' | grep -q '"spec"'
+          curl -fs "$URL/en" | grep -qi "describe the app"
+          test "$(curl -s -o /dev/null -w '%{http_code}' -X POST "$URL/api/v1/apps" -H 'origin: https://evil.example' -H 'content-type: text/plain' -d '{}')" = 403
+      - if: failure()
+        run: cat agent.log || true

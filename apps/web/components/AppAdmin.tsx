@@ -26,7 +26,7 @@ export function AppAdmin({ locale, appId }: { locale: Locale; appId: string }) {
 
   const load = useCallback(async () => {
     try { setApp(await api<AppView>(`/apps/${appId}`)); }
-    catch (e) { if (e instanceof ApiError && e.status === 401) window.location.href = `/${locale}/login?next=/${locale}/apps/${appId}`; else setError(true); }
+    catch (e) { setError(true); }
   }, [appId, locale]);
   useEffect(() => { void load(); }, [load]);
 

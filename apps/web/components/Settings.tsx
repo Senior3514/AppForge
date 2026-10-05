@@ -97,86 +97,13 @@ function AiPanel({ locale }: { locale: Locale }) {
   );
 }
 
-function AccountPanel({ locale, email }: { locale: Locale; email: string }) {
-  const [current, setCurrent] = useState("");
-  const [next, setNext] = useState("");
-  const [pw, setPw] = useState<{ ok: boolean; text: string } | null>(null);
-  const [confirm, setConfirm] = useState("");
-  const [delPw, setDelPw] = useState("");
-  const [del, setDel] = useState<string | null>(null);
-
-  async function changePassword(e: React.FormEvent) {
-    e.preventDefault(); setPw(null);
-    try { await api("/account/password", { method: "POST", body: { current, password: next } }); setCurrent(""); setNext(""); setPw({ ok: true, text: t(locale, "acct.passwordDone") }); }
-    catch (err) { setPw({ ok: false, text: t(locale, err instanceof ApiError && err.status === 403 ? "acct.passwordBad" : "common.error") }); }
-  }
-  async function exportData() {
-    const data = await api("/account/export");
-    const url = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: "application/json" }));
-    const a = document.createElement("a"); a.href = url; a.download = "appforge-export.json"; a.click(); URL.revokeObjectURL(url);
-  }
-  async function deleteAccount(e: React.FormEvent) {
-    e.preventDefault(); setDel(null);
-    try { await api("/account/delete", { method: "POST", body: { confirm, password: delPw } }); window.location.href = `/${locale}`; }
-    catch (err) { setDel(t(locale, err instanceof ApiError && (err.status === 403 || err.status === 400) ? "acct.deleteBad" : "common.error")); }
-  }
-
-  return (
-    <div className="space-y-6">
-      <section className={card}>
-        <h2 className="mb-1 font-semibold">{t(locale, "acct.password")}</h2>
-        <p className="mb-4 text-sm text-slate-600" dir="ltr">{email}</p>
-        <form onSubmit={changePassword} className="space-y-4">
-          <label className="block text-sm font-medium">{t(locale, "acct.current")}
-            <input type="password" autoComplete="current-password" value={current} onChange={(e) => setCurrent(e.target.value)} className={`${input} mt-1`} />
-          </label>
-          <label className="block text-sm font-medium">{t(locale, "acct.new")}
-            <input type="password" required minLength={8} autoComplete="new-password" value={next} onChange={(e) => setNext(e.target.value)} className={`${input} mt-1`} />
-          </label>
-          {pw && <p role={pw.ok ? "status" : "alert"} className={`text-sm ${pw.ok ? "text-green-800" : "text-red-700"}`}>{pw.text}</p>}
-          <button className="btn-primary px-6 py-2.5">{t(locale, "reset.submit")}</button>
-        </form>
-      </section>
-      <section className={card}>
-        <h2 className="mb-1 font-semibold">{t(locale, "acct.export")}</h2>
-        <p className="mb-3 text-sm text-slate-600">{t(locale, "acct.exportBody")}</p>
-        <button onClick={exportData} className="rounded-full border border-slate-300 px-6 py-2.5 text-sm">{t(locale, "acct.export")}</button>
-      </section>
-      <section className={`${card} border border-red-200`}>
-        <h2 className="mb-1 font-semibold text-red-800">{t(locale, "acct.delete")}</h2>
-        <p className="mb-3 text-sm text-slate-600">{t(locale, "acct.deleteBody")}</p>
-        <form onSubmit={deleteAccount} className="space-y-3">
-          <label className="block text-sm font-medium">{t(locale, "acct.deleteConfirm")}
-            <input dir="ltr" value={confirm} onChange={(e) => setConfirm(e.target.value)} className={`${input} mt-1`} />
-          </label>
-          <label className="block text-sm font-medium">{t(locale, "auth.password")}
-            <input type="password" autoComplete="current-password" value={delPw} onChange={(e) => setDelPw(e.target.value)} className={`${input} mt-1`} />
-          </label>
-          {del && <p role="alert" className="text-sm text-red-700">{del}</p>}
-          <button disabled={confirm.trim().toLowerCase() !== email} className="rounded-full bg-red-700 px-6 py-2.5 text-sm font-semibold text-white disabled:opacity-40">{t(locale, "acct.delete")}</button>
-        </form>
-      </section>
-    </div>
-  );
-}
-
 export function Settings({ locale }: { locale: Locale }) {
   const { me } = useMe();
-  const [tab, setTab] = useState<"ai" | "account">("ai");
-  useEffect(() => { if (me && !me.user) window.location.href = `/${locale}/login?next=/${locale}/settings`; }, [me, locale]);
   if (!me?.user) return <main className="px-4 py-14"><p aria-busy>{t(locale, "common.loading")}</p></main>;
-  const tabBtn = (id: "ai" | "account", key: "settings.ai" | "settings.account") => (
-    <button role="tab" aria-selected={tab === id} onClick={() => setTab(id)} className={`rounded-full px-5 py-2 text-sm font-semibold ${tab === id ? "bg-slate-900 text-white" : "border border-slate-300"}`}>{t(locale, key)}</button>
-  );
   return (
     <main className="mx-auto max-w-2xl px-4 py-10">
       <h1 className="mb-6 text-3xl font-extrabold tracking-tight">{t(locale, "settings.title")}</h1>
-      {me.user.anonymous ? <p className="text-sm text-slate-700">{t(locale, "ai.needAccount")}</p> : (
-        <>
-          <div role="tablist" className="mb-6 flex gap-2">{tabBtn("ai", "settings.ai")}{tabBtn("account", "settings.account")}</div>
-          {tab === "ai" ? <AiPanel locale={locale} /> : <AccountPanel locale={locale} email={me.user.email ?? ""} />}
-        </>
-      )}
+      <AiPanel locale={locale} />
     </main>
   );
 }

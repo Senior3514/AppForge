@@ -1,23 +1,13 @@
 "use client";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
-import { t, tf, type Locale } from "@appforge/i18n";
-import { ApiError, api } from "../lib/api";
+import { t, type Locale } from "@appforge/i18n";
+import { api } from "../lib/api";
 import { dateOnly } from "../lib/format";
 import type { AppSummary } from "../lib/types";
 import { useMe } from "../lib/useMe";
 import { Icon } from "./art";
 import { PromptBox } from "./PromptBox";
-
-function VerifyBanner({ locale }: { locale: Locale }) {
-  const [sent, setSent] = useState(false);
-  return (
-    <p role="status" className="mt-4 rounded-xl bg-amber-50 p-3 text-sm text-amber-900">
-      {t(locale, "verify.banner")}{" "}
-      {sent ? t(locale, "verify.resent") : <button className="font-semibold underline" onClick={async () => { await api("/auth/verify/resend", { method: "POST", body: {} }); setSent(true); }}>{t(locale, "verify.resend")}</button>}
-    </p>
-  );
-}
 
 export function Dashboard({ locale }: { locale: Locale }) {
   const { me } = useMe();
@@ -27,7 +17,7 @@ export function Dashboard({ locale }: { locale: Locale }) {
 
   const load = useCallback(async () => {
     try { setApps((await api<{ apps: AppSummary[] }>("/apps")).apps); }
-    catch (e) { if (e instanceof ApiError && e.status === 401) window.location.href = `/${locale}/login?next=/${locale}/dashboard`; else setError(t(locale, "common.error")); }
+    catch { setError(t(locale, "common.error")); }
   }, [locale]);
   useEffect(() => { void load(); }, [load]);
 
@@ -37,23 +27,14 @@ export function Dashboard({ locale }: { locale: Locale }) {
     await load();
   }
 
-  const plan = me?.tenant;
   return (
     <main className="mx-auto max-w-5xl px-4 py-10">
       <div className="flex flex-wrap items-center gap-3">
         <h1 className="text-3xl font-extrabold tracking-tight">{t(locale, "dash.title")}</h1>
-        {plan && <span className="rounded-full bg-slate-100 px-3 py-1 text-xs">{tf(locale, "dash.plan", { plan: t(locale, `plan.${plan.effectivePlan}`) })}</span>}
-        {plan?.status === "trialing" && plan.trialEndsAt && <span className="text-xs text-slate-600">{tf(locale, "dash.trial", { date: dateOnly(plan.trialEndsAt, locale) })}</span>}
-        <Link href={`/${locale}/pricing`} className="text-sm font-semibold underline">{t(locale, "dash.upgrade")}</Link>
         <button onClick={() => setCreating((v) => !v)} className="btn-primary ms-auto inline-flex items-center gap-1.5 px-5 py-2 text-sm"><Icon name="bolt" size={16} />{t(locale, "dash.new")}</button>
       </div>
-      {me?.user && !me.user.anonymous && me.user.verified === false && <VerifyBanner locale={locale} />}
-      {me?.user && !me.user.anonymous && me.aiSource === "mock" && (
+      {me?.aiSource === "mock" && (
         <p className="mt-4 rounded-xl bg-indigo-50 p-3 text-sm text-indigo-900" data-testid="ai-banner">{t(locale, "dash.aiBanner")} <Link href={`/${locale}/settings`} className="font-semibold underline">{t(locale, "dash.aiBannerLink")}</Link></p>
-      )}
-      {me?.user?.anonymous && (
-        <p className="mt-4 rounded-xl bg-blue-50 p-3 text-sm text-blue-900">{t(locale, "auth.claim")}{" "}
-          <Link className="font-semibold underline" href={`/${locale}/signup`}>{t(locale, "nav.signup")}</Link></p>
       )}
       {creating && <div className="mt-6"><PromptBox locale={locale} autofocus /></div>}
       {error && <p role="alert" className="mt-4 text-red-700">{error}</p>}

@@ -19,4 +19,6 @@ export interface Deps {
   sealer: Sealer | null;
   /** Emails allowed into the operator console (must also be verified). */
   operatorEmails: Set<string>;
+  /** Desktop-agent mode: one built-in local owner, no sign-in. Every request must carry `key` (only the local web proxy knows it). */
+  local: { key: string } | null;
 }

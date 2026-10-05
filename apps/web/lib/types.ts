@@ -6,7 +6,7 @@ export interface AppView {
   history: { seq: number; label: string; source: string; at: string; applied: boolean }[];
   publishedAt: string | null; shared: boolean; updatedAt: string;
 }
-export interface ServerInfo { llm: string; payments?: string; push?: string; builds?: string; billing?: string }
+export interface ServerInfo { llm: string; local?: boolean; payments?: string; push?: string; builds?: string; billing?: string }
 export interface Me {
   user: { email: string | null; anonymous: boolean; verified?: boolean; operator?: boolean } | null;
   tenant?: { plan: Plan; status: string; effectivePlan: Plan; trialEndsAt: string | null };

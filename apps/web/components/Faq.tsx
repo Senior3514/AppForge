@@ -1,6 +1,6 @@
 import { t, type Locale } from "@appforge/i18n";
 
-const N = [1, 2, 3, 4, 5] as const;
+const N = [1, 2, 3, 4, 5, 6] as const;
 
 export function Faq({ locale }: { locale: Locale }) {
   return (

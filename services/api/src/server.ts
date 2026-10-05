@@ -19,4 +19,4 @@ createServer(async (incoming, outgoing) => {
   if (cookies.length) headers["set-cookie"] = cookies;
   outgoing.writeHead(res.status, headers);
   outgoing.end(Buffer.from(await res.arrayBuffer()));
-}).listen(port, () => console.log(`AppForge API on :${port} — llm=${platform.deps.llm.name} db=${process.env.DATABASE_URL ? "postgres" : "embedded"}`));
+}).listen(port, platform.deps.local ? "127.0.0.1" : undefined, () => console.log(`AppForge API on :${port} — llm=${platform.deps.llm.name}${platform.deps.local ? " local-agent" : ""} db=${process.env.DATABASE_URL ? "postgres" : "embedded"}`));

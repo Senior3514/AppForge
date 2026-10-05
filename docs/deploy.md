@@ -1,3 +1,5 @@
+> **Note:** the shipped product is the desktop agent (see README). This guide is for running the *hosted multi-user* mode, which is currently dormant and has no UI.
+
 # Deploying AppForge (Supabase Postgres + any container host)
 
 AppForge is one container (API + web) and one Postgres. Supabase supplies the Postgres; Render, Fly.io, Railway, a VPS — anything that runs a Docker image — runs the container.
