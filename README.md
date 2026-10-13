@@ -21,5 +21,8 @@ Installers are built by `.github/workflows/release.yml` when a `v*` tag is pushe
 - What's verified, what's mocked, and the honest limitations: [PROGRESS.md](PROGRESS.md)
 - Walkthrough: [docs/demo-phase2.md](docs/demo-phase2.md)
 - Adding real keys (Claude, Stripe, Resend, Expo): [docs/go-live.md](docs/go-live.md)
+- Launch kit (positioning, demo script, drafts, pre-launch checklist): [docs/launch.md](docs/launch.md)
+- Hebrew copy for native-speaker review: [docs/hebrew-review.md](docs/hebrew-review.md)
+- Measure AI quality with your own key: `pnpm eval` (see docs/launch.md)
 - Deploying on Supabase + a container host: [docs/deploy.md](docs/deploy.md)
 - Container: `docker compose up --build`

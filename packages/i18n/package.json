@@ -5,6 +5,10 @@
   "type": "module",
   "main": "src/index.ts",
   "types": "src/index.ts",
-  "scripts": { "typecheck": "tsc -p .", "test": "vitest run --passWithNoTests" },
+  "scripts": {
+    "typecheck": "tsc -p .",
+    "test": "vitest run --passWithNoTests",
+    "review-sheet": "tsx scripts/review-sheet.mts"
+  },
   "dependencies": {}
 }

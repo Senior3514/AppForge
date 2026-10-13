@@ -52,6 +52,9 @@ Each integration needs its flag **and** its credentials; otherwise the mock runs
 | Store builds | simulated; log says SIMULATED | EAS CLI | **No** |
 | Database | embedded Postgres (PGlite) | any Postgres via `DATABASE_URL` (Supabase: see docs/deploy.md) | **Yes** (Postgres 16); **Supabase itself not tried** |
 
+## Measuring quality
+`pnpm eval` runs 14 varied prompts (English/Hebrew, vague, very long, a prompt-injection attempt) and 18 edits through any configured provider and reports valid-app rate, repairs, expected modules, language, time and cost. **Baseline with the keyword mock (not an AI): 14/14 valid, 6/14 with every expected module, 5/18 edits applied** — which shows the mock is shallow, not how a model performs. No real-model run exists yet.
+
 ## Honest limitations
 - **Installers: only Linux was exercised.** The bundled agent and the *unpacked* Linux Electron app were started here (under a virtual display), served the UI, built an app and kept data across restarts. The macOS/Windows installers and the Linux AppImage are produced by `release.yml`, which has never run; expect first-run fixes. Installers are **unsigned**, so Windows SmartScreen / macOS Gatekeeper will warn (the download page says so). No auto-update yet.
 - **Phone preview/QR only works on the same computer** in the agent (servers bind to loopback for safety); sharing a preview to a phone needs a tunnel or a cloud edition.
