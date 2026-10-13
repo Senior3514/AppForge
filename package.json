@@ -11,7 +11,8 @@
     "start": "node scripts/run.mjs start",
     "start:local": "node scripts/run.mjs start --local",
     "dev:local": "node scripts/run.mjs dev --local",
-    "e2e": "pnpm --filter @appforge/web e2e"
+    "e2e": "pnpm --filter @appforge/web e2e",
+    "eval": "pnpm --filter @appforge/generator eval"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
